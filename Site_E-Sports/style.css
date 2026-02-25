@@ -4,10 +4,6 @@
   padding: 0;
 }
 
-h2 {
-  color: #955a2d;
-}
-
 body {
   font-family: Arial, sans-serif;
   background: #fdedd2;
@@ -19,11 +15,6 @@ body {
 header{
     background-color: #107025;
 }
-/*body{
-    display: flex;
-    justify-content: space-around;
-    flex-direction: column;
-}*/
 main{
     background-color: #16ac36;
     flex: 1;

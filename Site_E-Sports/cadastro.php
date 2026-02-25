@@ -18,12 +18,21 @@
         flex-direction: column;
         justify-content: center;
     }
+    main > *{
+        align-self: center;
+    }
+    div.plate{
+        height: 200px;
+        width: 400px;
+        background-color: #888888;
+    }
 
 </style>
 
 <main>
-    <div style="">
+    <div class="plate">
         <p>Hello, world</p>
     </div>
+    <p>haihaihaihai</p>
 </main>
 </body>
