@@ -9,18 +9,21 @@
     <title>FragForce</title>
 </head>
 <body>
-    <header>
-        <p>
-            Hello, World.
-        </p>
-    </header>
+<style>
+    header, main{
+        background-color: #135D04;
+    }
+    main{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
 
-    <main>
-        <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Sint repellendus voluptatem animi culpa est, incidunt porro vitae, at illo ad labore provident magnam expedita fugit. Aperiam cum dignissimos eius quas.</p>
-    </main>
+</style>
 
-    <footer>
-        <p>Bye, World.</p>
-    </footer>
+<main>
+    <div style="">
+        <p>Hello, world</p>
+    </div>
+</main>
 </body>
-</html>

@@ -10,17 +10,4 @@
 </head>
 <body>
     <header>
-        <p>
-            Hello, World.
-        </p>
     </header>
-
-    <main>
-        <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Sint repellendus voluptatem animi culpa est, incidunt porro vitae, at illo ad labore provident magnam expedita fugit. Aperiam cum dignissimos eius quas.</p>
-    </main>
-
-    <footer>
-        <p>Bye, World.</p>
-    </footer>
-</body>
-</html>
