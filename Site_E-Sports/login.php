@@ -22,7 +22,7 @@
         align-self: center;
     }
     form{
-        height: 250px;
+        height: 200px;
         width: 400px;
         border-radius: 25px;
         background-color: #888888;
@@ -40,12 +40,15 @@
 
 <main>
     <form method="POST">
-        <label>Email:</label><input type="text">
+        <?php
+            if (true) {
+                echo '<p style="font-size: 15px;text-align: center; margin-bottom: 5px; color: rgb(245, 24, 30);font-weight:normal;">Login invalido, tente novamente.</p>';
+            }
+        ?>
+        <label>Email/Nickname:</label><input type="text">
         <label>Senha:</label><input type="text">
-        <label>Data de nascimento:</label><input type="text">
-        <label>Nome de Usuário</label><input type="text">
-        <input style="margin-top:10px" type="submit" value="Cadastrar">
+        <input style="margin-top:10px" type="submit" value="Entrar">
     </form>
-    <p style="font-size: 15px">Já conta? <a href="login.php">Entre!</a></p>
+    <p style="font-size: 15px">Não possui conta? <a href="cadastro.php">Cadastre-se!</a></p>
 </main>
 </body>
