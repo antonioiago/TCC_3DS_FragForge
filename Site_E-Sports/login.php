@@ -30,11 +30,17 @@
         display: flex;
         flex-direction: column;
         padding: 20px;
-        color: #eeeeee;
         font-weight: bold;
     }
     label{
         font-size: 12px;
+    }
+    p, label{
+        color: #eeeeee;
+    }
+    a{
+        color: #59aefd;
+        text-decoration-line: none;
     }
 </style>
 
