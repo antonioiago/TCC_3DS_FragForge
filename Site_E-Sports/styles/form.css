@@ -1,0 +1,47 @@
+form{
+    width: 400px;
+    border-radius: 25px;
+    background-color: #888888;
+    justify-content: end;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    font-weight: bold;
+}
+:root{
+    --primary_color: #135D04;
+}
+header, main{
+    background-color: var(--primary_color);
+}
+main{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+main > *{
+    align-self: center;
+}
+label{
+    font-size: 12px;
+}
+p, label{
+    color: #eeeeee;
+}
+a{
+    color: #59aefd;
+    text-decoration-line: none;
+    font-size: 14px;
+}
+input{
+    height: 25px
+}
+.submit{
+    margin-top: 10px;
+    width: 100px;
+    align-self: center;
+    border-radius: 10px;
+    background-color: var(--primary_color);
+    border-color: #034D04;
+    color: #eeeeee;
+}
