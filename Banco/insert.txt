@@ -1,0 +1,4 @@
+insert into funcao values
+(1,'tank','imagnes'),
+(2,'dps','imagnes'),
+(3,'sup','imagnes');

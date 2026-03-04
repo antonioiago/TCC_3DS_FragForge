@@ -1,6 +1,20 @@
 create database if not exists fragforge;
 use fragforge;
 
+create table funcao
+(
+	id_funcao int not null primary key,
+    nome_funcao varchar(20) not null,
+    icon_funcao mediumblob
+);
+
+create table patente
+(
+	id_patente int not null primary key,
+    nome_patente varchar(20) not null,
+    icon_patente mediumblob
+);
+
 create table jogador
 (
 	id_jogador int auto_increment primary key,
@@ -8,7 +22,11 @@ create table jogador
     codigo_battlenet varchar(100) not null unique,
     email_jogador varchar(100) not null unique,
     senha_jogador varchar(100),
-    foto_jogador mediumblob    
+    id_funcao int,
+    id_patente int,
+    foto_jogador mediumblob,
+    foreign key (id_funcao) references funcao (id_funcao),
+    foreign key (id_patente) references patente (id_patente)
 );
 
 create table highlight
@@ -40,6 +58,4 @@ select * from jogador;
 select * from highlight;
 select * from adm;
 select * from equipe;
-
-
-
+select * from funcao;
