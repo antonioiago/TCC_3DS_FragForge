@@ -16,8 +16,8 @@ include __DIR__.'/includes/head.php';
             <input class="submit" type="submit" value="Entrar">
         </form>
         <div style="display: flex; justify-content: space-between">
-            <a href="cadastro.php">Não possui conta?</a>
-            <a href="cadastro.php">Esqueceu a senha?</a>
+            <a href="form-cadastro.php">Não possui conta?</a>
+            <a href="form-redfsenha.php">Esqueceu a senha?</a>
         </div>
     </div>
 </main>

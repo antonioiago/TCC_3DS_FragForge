@@ -13,7 +13,6 @@ include __DIR__.'/includes/head.php';
         <label>Email:</label><input type="text" name="email" placeholder="nome@local.com" required>
         <label>Senha:</label><input type="password" name="password" required>
         <label>Repita a senha:</label><input type="password" name="chkpassword" required>
-        <label>Data de nascimento:</label><input type="date" name= "birthdate" required>
         <label>Nome de Usuário</label><input type="text" name="nameuser" required>
         <input class="submit" type="submit" value="Cadastrar">
     </form>
