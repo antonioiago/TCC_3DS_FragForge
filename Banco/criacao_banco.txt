@@ -1,0 +1,45 @@
+create database if not exists fragforge;
+use fragforge;
+
+create table jogador
+(
+	id_jogador int auto_increment primary key,
+	nickname_jogador varchar(100) not null,
+    codigo_battlenet varchar(100) not null unique,
+    email_jogador varchar(100) not null unique,
+    senha_jogador varchar(100),
+    foto_jogador mediumblob    
+);
+
+create table highlight
+(
+	id_highlight int auto_increment primary key,
+    id_jogador int not null,
+    print_estatistica mediumblob,
+    jogada longblob,
+	foreign key (id_jogador) references jogador(id_jogador)
+);
+
+create table adm
+(
+	id_adm int auto_increment primary key,
+    nickname_adm varchar(100) not null,
+    email_adm varchar(100) not null unique,
+    senha_adm varchar(100) not null,
+    foto_adm mediumblob
+);
+
+create table equipe
+(
+	id_equipe int auto_increment primary key,
+    nome_equipe varchar(100) not null unique,
+    foto_equipe mediumblob
+);
+
+select * from jogador;
+select * from highlight;
+select * from adm;
+select * from equipe;
+
+
+
