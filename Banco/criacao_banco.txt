@@ -25,6 +25,7 @@ create table jogador
     id_funcao int,
     id_patente int,
     foto_jogador mediumblob,
+    pontuacao_jogador int,
     foreign key (id_funcao) references funcao (id_funcao),
     foreign key (id_patente) references patente (id_patente)
 );
@@ -51,7 +52,8 @@ create table equipe
 (
 	id_equipe int auto_increment primary key,
     nome_equipe varchar(100) not null unique,
-    foto_equipe mediumblob
+    foto_equipe mediumblob,
+    pontuacao_equipe int
 );
 
 select * from jogador;
