@@ -26,8 +26,10 @@ create table jogador
     id_patente int,
     foto_jogador mediumblob,
     pontuacao_jogador int,
+	id_equipe int,
     foreign key (id_funcao) references funcao (id_funcao),
-    foreign key (id_patente) references patente (id_patente)
+    foreign key (id_patente) references patente (id_patente),
+	foreign key (id_equipe) references equipe (id_equipe)
 );
 
 create table highlight
