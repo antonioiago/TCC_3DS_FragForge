@@ -10,10 +10,11 @@ include __DIR__.'/includes/head.php';
             if (false) {
             }
         ?>
-        <label>Email:</label><input type="text" name="email" placeholder="nome@local.com" required>
-        <label>Senha:</label><input type="password" name="password" required>
+        <label>Nome de Usuário</label><input type="text" name="nickname_jogador " required>
+        <label>Email:</label><input type="text" name="email_jogador" placeholder="nome@local.com" required>
+        <label>Senha:</label><input type="password" name="senha_jogador" required>
         <label>Repita a senha:</label><input type="password" name="chkpassword" required>
-        <label>Nome de Usuário</label><input type="text" name="nameuser" required>
+        
         <input class="submit" type="submit" value="Cadastrar">
     </form>
     <p style="font-size: 15px">Já possui uma conta? <a href="login.php">Entre aqui!</a></p>
