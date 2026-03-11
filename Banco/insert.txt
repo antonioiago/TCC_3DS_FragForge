@@ -5,10 +5,10 @@ insert into funcao values
 
 insert into patente values
 (1, 'bronze', 'imagens/bronze.webp'),
-(2, 'prata, 'imagens/prata.webp'),
-(3, 'ouro', imagens/ouro.webp),
-(4, 'platina', imagens/platina.webp),
+(2, 'prata', 'imagens/prata.webp'),
+(3, 'ouro', 'imagens/ouro.webp'),
+(4, 'platina', 'imagens/platina.webp'),
 (5, 'diamante', 'imagens/diamante.webp'),
 (6, 'mestre', 'imagens/mestre.webp'),
-(7, 'grão mestre', 'graomestre', 'imagens/graomestre.webp');
+(7, 'grão mestre','imagens/graomestre.webp'),
 (8, 'champion', 'imagens/champion.webp');
