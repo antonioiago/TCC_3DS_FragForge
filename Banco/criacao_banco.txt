@@ -15,6 +15,15 @@ create table patente
     icon_patente mediumblob
 );
 
+
+create table equipe
+(
+	id_equipe int auto_increment primary key,
+    nome_equipe varchar(100) not null unique,
+    foto_equipe mediumblob,
+    pontuacao_equipe int
+);
+
 create table jogador
 (
 	id_jogador int auto_increment primary key,
@@ -50,13 +59,6 @@ create table adm
     foto_adm mediumblob
 );
 
-create table equipe
-(
-	id_equipe int auto_increment primary key,
-    nome_equipe varchar(100) not null unique,
-    foto_equipe mediumblob,
-    pontuacao_equipe int
-);
 
 select * from jogador;
 select * from highlight;
