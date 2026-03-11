@@ -15,6 +15,24 @@ form{
 :root{
     --primary_color: #135D04;
 }
+header{
+    display: flex;
+    justify-content: center;
+    font-style: italic;
+    font-family:'Times New Roman', Times, serif;
+    > h2{
+        font-size: 1.8em;
+        color: #ffffff;
+    }
+    > img{ /*Para o ícone*/
+        height: 32px;
+        width: 32px;
+        border: #000000;
+        border-style: solid;
+        border-radius: 100%;
+        border-width: 1px;
+    }
+}
 header, main{
     background-color: var(--primary_color);
 }
@@ -22,9 +40,9 @@ main{
     display: flex;
     flex-direction: column;
     justify-content: center;
-}
-main > *{
-    align-self: center;
+    > *{
+        align-self: center;
+    }
 }
 label{
     font-size: 12px;
@@ -46,6 +64,9 @@ input{
     align-self: center;
     border-radius: 10px;
     background-color: var(--primary_color);
-    border-color: #034D04;
+    border-color: #033D04;
     color: #eeeeee;
+}
+.submit:hover{
+    background-color: #034D04;
 }

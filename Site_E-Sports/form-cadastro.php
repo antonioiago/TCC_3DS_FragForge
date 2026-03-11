@@ -3,6 +3,13 @@ include __DIR__.'/includes/head.php';
 ?>
 <link rel="stylesheet" href="styles/form.css">
 
+<header>
+    <img src="logo.png">
+    <h2>
+        FragForce
+    </h2>
+</header>
+
 <main>
     <form method="POST" action="cadastrar.php">
         <?php
@@ -16,6 +23,6 @@ include __DIR__.'/includes/head.php';
         <label>Nome de Usuário</label><input type="text" name="nameuser" required>
         <input class="submit" type="submit" value="Cadastrar">
     </form>
-    <p style="font-size: 15px">Já possui uma conta? <a href="login.php">Entre aqui!</a></p>
+    <p style="font-size: 15px">Já possui uma conta? <a href="form-login.php">Entre aqui!</a></p>
 </main>
 </body>
