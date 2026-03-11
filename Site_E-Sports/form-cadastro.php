@@ -24,6 +24,6 @@ include __DIR__.'/includes/head.php';
         
         <input class="submit" type="submit" value="Cadastrar">
     </form>
-    <p style="font-size: 15px">Já possui uma conta? <a href="form-login.php">Entre aqui!</a></p>
+    <p style="font-size: 15px">Já possui uma conta? <a href="form-login;php">Entre aqui!</a></p>
 </main>
 </body>
