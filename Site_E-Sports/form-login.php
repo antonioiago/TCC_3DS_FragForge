@@ -3,6 +3,13 @@ include __DIR__.'/includes/head.php';
 ?>
 <link rel="stylesheet" href="styles/form.css">
 
+<header>
+    <img src="logo.png">
+    <h2>
+        FragForce
+    </h2>
+</header>
+
 <main>
     <div>
         <form method="POST">
