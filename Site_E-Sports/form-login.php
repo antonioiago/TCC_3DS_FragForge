@@ -12,14 +12,16 @@ include __DIR__.'/includes/head.php';
 
 <main>
     <div>
-        <form method="POST">
+        <form method="POST" action="logar.php">
             <?php
-                if (false) {
-                    echo '<p style="font-size: 15px;text-align: center; margin-bottom: 5px; color: rgb(245, 24, 30);font-weight:normal;">Login invalido, tente novamente.</p>';
+                session_start();
+                if (isset($_SESSION['MnsErro'])) {
+                    echo '<p style="font-size: 15px;text-align: center; margin-bottom: 5px; color: rgb(245, 24, 30);font-weight:normal;">'.$_SESSION['MnsErro'].'</p>';
+                    session_abort();
                 }
             ?>
-            <label>Email/Nickname:</label><input type="text">
-            <label>Senha:</label><input type="text">
+            <label>Email/Nickname:</label><input type="text" name="nome-email">
+            <label>Senha:</label><input type="password" name="senha">
             <input class="submit" type="submit" value="Entrar">
         </form>
         <div style="display: flex; justify-content: space-between">

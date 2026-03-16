@@ -13,6 +13,8 @@ body {
 }
 header{
     background-color: #107025;
+    display: flex;
+    justify-content: space-between;
 }
 main{
     background-color: #16ac36;
