@@ -9,7 +9,7 @@
     if (isset($_SESSION['jogador']['id'])) {
         echo "<p>Bem vindo, ".$_SESSION['jogador']['id']."</p>";
     } else {
-        echo '<p>Você não está logado! <a href="form-login.php">Entre agora!</a>';
+        echo '<p>Você não está logado! <a class="btn-login" href="form-login.php">Entre agora!</a>';
     }
     ?>
 </header>
