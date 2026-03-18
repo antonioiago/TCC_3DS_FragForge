@@ -8,7 +8,7 @@ _ Nicolas Cavalcanti da Silva
 _ Gustavo Gazola Savazzi
 _ João Vitor Silva Andrade
 _ Fernando Lopes de Sousa
-_ Rhyan Ruiz Gonçalves
+_ Ryan Ruiz Gonçalves
 _ Cauã Lopes Nobre do Nascimento
 </p>
  
