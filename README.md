@@ -4,11 +4,11 @@ Esse projeto tem como principal objetivo gerar oportunidades para os que desejam
  <h1>Membros</h1>
 <p>
 - Antonio Iago do Nascimento Portela<br>
-- Nicolas Cavalcanti da Silva
-- Gustavo Gazola Savazzi
-- João Vitor Silva Andrade
-- Fernando Lopes de Sousa
-- Ryan Ruiz Gonçalves
-- Cauã Lopes Nobre do Nascimento
+- Nicolas Cavalcanti da Silva <br>
+- Gustavo Gazola Savazzi <br>
+- João Vitor Silva Andrade <br>
+- Fernando Lopes de Sousa <br>
+- Ryan Ruiz Gonçalves <br>
+- Cauã Lopes Nobre do Nascimento <br>
 </p>
  
