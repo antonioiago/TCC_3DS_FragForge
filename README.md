@@ -3,7 +3,7 @@ Esse projeto tem como principal objetivo gerar oportunidades para os que desejam
 
  <h1>Membros</h1>
 <p>
-- Antonio Iago do Nascimento Portela
+- Antonio Iago do Nascimento Portela<br>
 - Nicolas Cavalcanti da Silva
 - Gustavo Gazola Savazzi
 - João Vitor Silva Andrade
