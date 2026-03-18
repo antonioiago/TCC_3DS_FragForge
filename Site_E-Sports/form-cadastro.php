@@ -19,6 +19,7 @@ include __DIR__.'/includes/head.php';
         ?>
         <label>Nome de Usuário:</label><input type="text" name="nickname_jogador" required>
         <label>Email:</label><input type="text" name="email_jogador" placeholder="nome@local.com" required>
+        <label >Código BattletNet:</label><input type="text" name="codigo_battlenet" required>
         <label>Senha:</label><input type="password" name="senha_jogador" required>
         <label>Repita a senha:</label><input type="password" name="chkpassword" required>
         

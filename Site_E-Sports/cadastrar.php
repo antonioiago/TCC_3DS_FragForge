@@ -10,11 +10,12 @@ if ($_POST["senha_jogador"] != $_POST["chkpassword"]) {
 
 try{
     //Criar a query para o insert
-    $stmt=$conn->prepare("insert into jogador(nickname_jogador, email_jogador, senha_jogador) values(?,?,?);");
+    $stmt=$conn->prepare("insert into jogador(nickname_jogador, email_jogador, senha_jogador, codigo_battlenet) values(?,?,?, ?);");
     //Passar o parâmetro dos valores
     $stmt->bindParam(1,$_POST['nickname_jogador']);
     $stmt->bindParam(2,$_POST['email_jogador']);
     $stmt->bindParam(3,$_POST['senha_jogador']);
+    $stmt->bindParam(4,$_POST['codigo_battlenet']);
     
     //Executando o insert
     $stmt->execute();
@@ -25,6 +26,7 @@ try{
     echo $_POST['nickname_jogador'];
     echo $_POST['email_jogador'];
     echo $_POST['senha_jogador'];
+    echo $_POST['codigo_battlenet'];
 }
 ?>
 
