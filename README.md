@@ -4,9 +4,9 @@ Esse projeto tem como principal objetivo gerar oportunidades para os que desejam
  -----Membros----------
  
 _ Antonio Iago do Nascimento Portela
-_ Nicolas Cavalcanti
-_ Gustavo Gazolav Savazzi
-_ João
-_ Fernando
-_ Rhyan Ruiz
-_Cauã
+_ Nicolas Cavalcanti da Silva
+_ Gustavo Gazola Savazzi
+_ João Vitor Silva Andrade
+_ Fernando Lopes de Sousa
+_ Rhyan Ruiz Gonçalves
+_ Cauã Lopes Nobre do Nascimento
