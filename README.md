@@ -12,6 +12,6 @@ Esse projeto tem como principal objetivo gerar oportunidades para os que desejam
 - Cauã Lopes Nobre do Nascimento <br>
 </p>
  <h1>Links</h1>
- Revista: https://www.canva.com/design/DAGxMSVUmzw/bN3ygGmaxMkMoZw6EyjkIQ/edit?utm_content=DAGxMSVUmzw&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+ Revista: https://www.canva.com/design/DAGxMSVUmzw/bN3ygGmaxMkMoZw6EyjkIQ/edit?utm_content=DAGxMSVUmzw&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton <br>
  Design Site: https://www.canva.com/design/DAHCWcWc4AY/-W1Fu9zbM7sKtzKF1fQyXw/edit?utm_content=DAHCWcWc4AY&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
  
