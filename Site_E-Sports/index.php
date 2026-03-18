@@ -28,20 +28,33 @@ include __DIR__.'/includes/header.php';
                         </h2>
                 </div>
 
+                <container class="not">
+                    <div class="card">
+                        <img src="includes/imagens/overwatch.jpg" alt="overwatch">
+                         <title>
+                                Overwatch 2 
+                            </title>
+                                <p>
+                                    <h2>
+                                    Ex-diretor de Overwatch revela que Blizzard o ameaçou ao exigir lucros astronômicos do jogo
+                                    </h2>
+                                </p>
+                            </a>
+                        </div>
 
-                <div class="card">
-                    <img src="includes/imagens/overwatch2.jpg" alt="overwatch2">
-                        <title>
-                            Overwatch 2 
-                        </title>
-                            <p>
-                                <h2>
-                                Ex-diretor de Overwatch revela que Blizzard o ameaçou ao exigir lucros astronômicos do jogo
-                                </h2>
-                            </p>
-                        </a>
-                </div>
-
+                    <div class="card">
+                        <img src="includes/imagens/overwatch2.jpg" alt="overwatch2">
+                            <title>
+                                Overwatch 2 
+                            </title>
+                                <p>
+                                    <h2>
+                                    Time Overwatch sai vencedor do evento Conquest Meta com skin azul Echo agora reivindicável
+                                    </h2>
+                                </p>
+                            </a>
+                    </div>
+            </container>
 
       
 
