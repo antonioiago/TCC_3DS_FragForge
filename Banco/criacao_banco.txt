@@ -28,7 +28,7 @@ create table jogador
 (
 	id_jogador int auto_increment primary key,
 	nickname_jogador varchar(100) not null,
-    codigo_battlenet varchar(100) not null unique,
+    codigo_battlenet varchar(100) unique,
     email_jogador varchar(100) not null unique,
     senha_jogador varchar(100),
     id_funcao int,

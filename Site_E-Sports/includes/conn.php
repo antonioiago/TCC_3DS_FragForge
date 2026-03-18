@@ -7,7 +7,7 @@
     const banco = "fragforge";
 
     try{
-        $conn = new PDO("mysql:host=".host.";port=".port.";dbname=".banco, user);
+        $conn = new PDO("mysql:host=".host.";port=".port.";dbname=".banco, user, senha);
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
     catch(PDOexpection $e){
