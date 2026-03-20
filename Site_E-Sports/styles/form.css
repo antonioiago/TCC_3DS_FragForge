@@ -12,8 +12,11 @@ form{
     padding: 20px;
     font-weight: bold;
 }
+
+
+/*alterando a cor aqui altera a cor da pagina toda*/
 :root{
-    --primary_color: #135D04;
+    --primary_color: #3432c7;
 }
 header{
     display: flex;
@@ -43,15 +46,17 @@ main{
     > *{
         align-self: center;
     }
+
+    
 }
 label{
     font-size: 12px;
 }
 p, label{
-    color: #eeeeee;
+    color: #ffffff;
 }
 a{
-    color: #59aefd;
+    color: #ffffff;
     text-decoration-line: none;
     font-size: 14px;
 }
@@ -64,7 +69,7 @@ input{
     align-self: center;
     border-radius: 10px;
     background-color: var(--primary_color);
-    border-color: #033D04;
+    border-color: #3a8af3;
     color: #eeeeee;
 }
 .submit:hover{

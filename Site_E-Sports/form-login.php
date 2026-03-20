@@ -1,13 +1,16 @@
 <?php
 include __DIR__.'/includes/head.php';
+
 ?>
 <link rel="stylesheet" href="styles/form.css">
 
 <header>
     <img src="logo.png">
     <h2>
-        FragForce
+        <a href="index.php" class="frag">FragForge</a>
+        
     </h2>
+
 </header>
 
 <main>
