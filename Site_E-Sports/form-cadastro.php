@@ -9,7 +9,7 @@ include __DIR__.'/includes/head.php';
 
 <header>
     <img src="logo.png" alt="Logo FragForce">
-    <h2>FragForce</h2>
+    <a href="index.php" class="frag"><h3>FragForge</h3>
 </header>
 
 <main>
