@@ -1,31 +1,72 @@
 <?php
-include __DIR__.'/includes/head.php';
+INCLUDE __DIR__.'/includes/head.php';
 include __DIR__.'/includes/header.php';
 ?>
 
 <main>
+    <!DOCTYPE html>
+        <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>FragForge</title>
+                <link rel="stylesheet" href="style/style.css">
+                <!---- esse link é so pra usar uma fonte que tem um icone bonito pro botão de login no header---->
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+                
+            </head>
 
-    <section class="boasv">
-        <h1>FragForge</h1>
-        <p>Bem-vindo(a) ao FragForge! Sua última destinação para notícias de Overwatch!</p>
-    </section>
+            <body>
+                <div class="boasv">
+                    <title>
+                        FragForge
+                    </title>
+                        <h2>
+                            <p>
+                                Bem vindo(a) ao FragForge! Sua última destinação para noticias de Overwatch!
+                            </p>
+                        </h2>
+                </div>
 
-    <section class="noticias">
+                <container class="not">
+                    <div class="card">
+                        <img src="includes/imagens/overwatch.jpg" alt="overwatch">
+                         <title>
+                                Overwatch 2 
+                            </title>
+                                <p>
+                                    <h2>
+                                    Ex-diretor de Overwatch revela que Blizzard o ameaçou ao exigir lucros astronômicos do jogo
+                                    </h2>
+                                </p>
+                            </a>
+                        </div>
 
-        <article class="card">
-            <img src="includes/imagens/overwatch.jpg" alt="Overwatch">
-            <h2>Ex-diretor de Overwatch revela que Blizzard o ameaçou ao exigir lucros astronômicos do jogo</h2>
-        </article>
+                    <div class="card">
+                        <img src="includes/imagens/overwatch2.jpg" alt="overwatch2">
+                            <title>
+                                Overwatch 2 
+                            </title>
+                                <p>
+                                    <h2>
+                                    Time Overwatch sai vencedor do evento Conquest Meta com skin azul Echo agora reivindicável
+                                    </h2>
+                                </p>
+                            </a>
+                    </div>
+            </container>
 
-        <article class="card">
-            <img src="includes/imagens/overwatch2.jpg" alt="Overwatch 2">
-            <h2>Time Overwatch sai vencedor do evento Conquest Meta com skin azul Echo agora reivindicável</h2>
-        </article>
+      
 
-    </section>
+            </body>
+            </html>
+
 
 </main>
+    
+
+
 
 <?php
 include __DIR__.'/includes/footer.php';
-?>s
+?>
