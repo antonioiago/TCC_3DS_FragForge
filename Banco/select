@@ -1,0 +1,8 @@
+//select de postagem
+"SELECT 
+    p.id_post,
+    p.mensagem,
+    j.nickname_jogador     
+FROM post p
+JOIN jogador j ON p.id_jogador = j.id_jogador;"
+//select de postagem

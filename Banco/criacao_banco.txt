@@ -50,6 +50,15 @@ create table highlight
 	foreign key (id_jogador) references jogador(id_jogador)
 );
 
+create table post
+(
+	id_post int auto_increment primary key,
+    mensagem varchar(255) not null,
+    comentario varchar(255),
+	id_jogador int not null,
+	foreign key (id_jogador) references jogador(id_jogador)
+);
+
 create table adm
 (
 	id_adm int auto_increment primary key,
