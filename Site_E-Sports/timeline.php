@@ -1,9 +1,12 @@
-<form action="enviar_post.php" method="post">
-    <input type="text" name="mensagem" id="mensagem"  placeholder="Escreve um post"><br>
-    <input type="text" name="id_jogador" id="id_jogador" placeholder="Id jogador"><br>
-    <input type="submit" value="Postar">
-</form>
+<link rel="stylesheet" href="style/timeline.css">
+
+<button onclick="window.open('http://localhost/TCC_3DS_FragForge/Site_E-Sports/post.php', '_blank', 'width=600,height=400')">
+  Criar postagem
+</button>
+
 <?php
+
+
         $instancia = new PDO('mysql:host=localhost;dbname=fragforge; charset=utf8','root', 'root');
         $stm = $instancia->query("SELECT 
                                         p.id_post,

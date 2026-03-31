@@ -10,7 +10,7 @@ try{
   
     //Executando o insert
     $stmt->execute();
-    header("Location: timeline.php");
+    header("Location: post.php");
     die();
 }catch(PDOexception $e){
     echo "ERROR: ".$e->getMessage();
