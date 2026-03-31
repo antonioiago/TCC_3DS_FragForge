@@ -1,7 +1,19 @@
-<form class="timeline" action="enviar_post.php" method="post">
-    <input type="text" name="mensagem" id="mensagem"  placeholder="Escreve um post"><br>
-    <input type="text" name="id_jogador" id="id_jogador" placeholder="Id jogador"><br>
-    <input type="submit" value="Postar">
+<?php
+session_start();
+// Proteção: Se não estiver logado, manda para o login
+if (!isset($_SESSION['jogador']['id'])) {
+    header("Location: form-login.php");
+    die();
+}
+?>
 
-    <button onclick="window.close()">Fechar Esta Janela</button>
+<form class="timeline" action="enviar_post.php" method="post">
+    <h3>Novo Post</h3>
+    
+    <input type="text" name="mensagem" id="mensagem" placeholder="O que está acontecendo no mapa?" required>
+    
+    <input type="hidden" name="id_jogador" value="<?= $_SESSION['jogador']['id'] ?>">
+    
+    <input type="submit" value="Postar">
+    <button type="button" onclick="window.close()">Cancelar</button>
 </form>

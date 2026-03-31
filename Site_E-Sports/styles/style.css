@@ -4,106 +4,141 @@
   padding: 0;
 }
 
-
-
-
 body {
-  font-family: Arial, sans-serif;
-  background: #ffffff;
-  color: #ffffff;
-  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #0f172a, #020617);
+  color: #fff;
+}
+
+/* HEADER */
+header {
+  padding: 15px 25px;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
   display: flex;
-  flex-direction: column;
- 
-}
-header{
-    padding: 20px;
-    margin-top: 10px;
-    margin-left: 5px;
-    top: 0;
-    left: 0;
-    z-index: 999px;
-    width:99%;
-    box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.5);
-    background-color: #3432c7;
-    display: flex;
-    justify-content: space-between;
-    border-radius: 5px 5px 10px 10px;
-    position: fixed;
-    
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  z-index: 1000;
 }
 
-
-
-.frag{
-    font-size: 30px;
+.frag {
+  font-size: 28px;
+  font-weight: bold;
+  color: #38bdf8;
 }
 
-
-/* texto de boas vindas ao site*/
-.boasv{
-  padding: 20px;
-  margin-top: 70px;
+/* BOTÃO LOGIN */
+.btn-login {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+  transition: 0.3s;
 }
 
-.not{
-    display: flex;
-    justify-content: space-between; /* Espaço entre os cards */
-    gap: 20px; /* Espaço entre as colunas */
-    flex-wrap: wrap; /* Permite que eles pulem de linha no celular */
+.btn-login:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px #38bdf8;
+}
+
+/* BOAS VINDAS */
+.boasv {
+  text-align: center;
+  padding: 120px 20px 40px;
+}
+
+.boasv h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.boasv p {
+  color: #94a3b8;
+}
+
+/* CARDS */
+.not {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 40px;
+  flex-wrap: wrap;
 }
 
 .card {
-    padding: 20px;
-    margin: 20px;
-    color: #000000;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    border-radius: 20px;
-    width: 25%;
-    height: 10%;
-    justify-content: space-between;
-    box-sizing: border-box;
+  background: #1e293b;
+  border-radius: 20px;
+  overflow: hidden;
+  width: 320px;
+  transition: 0.4s;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
 }
 
+.card:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+}
+
+/* IMAGEM */
 .card img {
-    border-radius: 20px;
-    width: 250px;
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
 }
 
-/*estilização do botão de login*/
-.btn-login {
-    background: #000000;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    margin-left: 10px;
-    transition: 0.3s;
+/* CONTEÚDO */
+.card-content {
+  padding: 20px;
 }
 
-/*esse hover é o efeito que da quando passa o mouse em cima*/
-
-.btn-login:hover {
-    background: #4bf89c;
-    transform: scale(1.05);
+.card-content h2 {
+  color: #38bdf8;
+  margin-bottom: 10px;
 }
 
-main{
-    background-color: #ffffff;
-    flex: 1;
-}
-footer{
-    padding: 7px;
-    background-color: #3432c7;
-    border-radius: 20px 20px 0px 0px;
+.card-content p {
+  color: #cbd5f5;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
 }
 
+/* BOTÃO */
+.btn {
+  display: inline-block;
+  padding: 8px 14px;
+  background: #38bdf8;
+  color: #000;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: 0.3s;
+  font-weight: bold;
+}
 
-/*responsividade para telas menores que 600px*/
+.btn:hover {
+  background: #0ea5e9;
+  transform: scale(1.05);
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 15px;
+  background: #020617;
+  margin-top: 40px;
+}
+
+/* RESPONSIVO */
 @media (max-width: 600px) {
-    .card {
-        width: 100%; /* Card ocupa a tela toda no celular */
-    }
+  .card {
+    width: 100%;
+  }
+
+  .boasv h1 {
+    font-size: 2rem;
+  }
 }

@@ -1,3 +1,26 @@
-td{
-    background-color: yellow; color: blue; border: 1px solid black;
+/* Substituindo o visual antigo por um estilo de 'Card' de postagem */
+.post-container {
+    background: rgba(30, 41, 59, 0.5);
+    border-left: 4px solid #38bdf8;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.post-container:hover {
+    background: rgba(30, 41, 59, 0.8);
+}
+
+.post-author {
+    font-size: 0.8rem;
+    color: #38bdf8;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.post-text {
+    color: #f8fafc;
+    line-height: 1.5;
 }
