@@ -7,11 +7,6 @@ include __DIR__.'/includes/head.php';
 
 <body>
 
-<header>
-    <img src="includes/imagens/logo_FragForge" alt="Logo FragForce">
-    <a href="index.php" class="frag"><h3>FragForge</h3>
-</header>
-
 <main>
     <h3>Cadastro</h3>
 
