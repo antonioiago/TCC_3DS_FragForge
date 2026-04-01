@@ -49,7 +49,8 @@ include __DIR__.'/includes/header.php';
         $stm = $instancia->query("SELECT 
                                         j.id_jogador,
                                         p.mensagem,
-                                        j.nickname_jogador     
+                                        j.nickname_jogador,
+                                        p.print_estatistica     
                                     FROM post p
                                     JOIN jogador j ON p.id_jogador = j.id_jogador;");
         echo "<table>";
@@ -59,6 +60,7 @@ include __DIR__.'/includes/header.php';
                     <td>".$row["id_jogador"]."</td>
                     <td>".$row["nickname_jogador"]."</td>
                     <td>".$row["mensagem"]."</td>
+                    <td><img src='data:print_estatistica/png;base64," . base64_encode($row["print_estatistica"]) . "' width='100'/></td>
                 </tr>";
         }
         echo "</table>";
