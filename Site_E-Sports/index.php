@@ -41,7 +41,30 @@ include __DIR__.'/includes/header.php';
                                 </p>
                             </a>
                         </div>
-
+<!-- DIV DAS POSTAGENS -->
+                    <div class="timeline">
+                        <button onclick="window.open('http://localhost/TCC_3DS_FragForge/Site_E-Sports/post.php', '_blank', 'width=600,height=400')">Criar postagem</button>
+                        <?php
+        $instancia = new PDO('mysql:host=localhost;dbname=fragforge; charset=utf8','root', 'root');
+        $stm = $instancia->query("SELECT 
+                                        j.id_jogador,
+                                        p.mensagem,
+                                        j.nickname_jogador     
+                                    FROM post p
+                                    JOIN jogador j ON p.id_jogador = j.id_jogador;");
+        echo "<table>";
+        echo "<tr><th>Id</th><th>Nome</th><th>Mensagem</tr>";
+        foreach ($stm as $row) {
+            echo "<tr>
+                    <td>".$row["id_jogador"]."</td>
+                    <td>".$row["nickname_jogador"]."</td>
+                    <td>".$row["mensagem"]."</td>
+                </tr>";
+        }
+        echo "</table>";
+    ?>
+                    </div>
+<!-- DIV DAS POSTAGENS -->
                     <div class="card">
                         <img src="includes/imagens/overwatch2.jpg" alt="overwatch2">
                             <title>

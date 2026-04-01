@@ -65,6 +65,18 @@ header{
     justify-content: space-between;
     box-sizing: border-box;
 }
+.timeline{
+    padding: 20px;
+    margin: 20px;
+    color: #000000;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    border-radius: 20px;
+    width:38%;
+    height: 18%;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
 
 .card img {
     border-radius: 20px;
