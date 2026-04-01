@@ -47,17 +47,16 @@ include __DIR__.'/includes/header.php';
                         <?php
         $instancia = new PDO('mysql:host=localhost;dbname=fragforge; charset=utf8','root', 'root');
         $stm = $instancia->query("SELECT 
-                                        j.id_jogador,
+                                       -- j.id_jogador,
                                         p.mensagem,
                                         j.nickname_jogador,
                                         p.print_estatistica     
                                     FROM post p
                                     JOIN jogador j ON p.id_jogador = j.id_jogador;");
         echo "<table>";
-        echo "<tr><th>Id</th><th>Nome</th><th>Mensagem</tr>";
+        echo "<tr><th>Nome</th><th>Mensagem</th><th>Imagem</tr>";
         foreach ($stm as $row) {
             echo "<tr>
-                    <td>".$row["id_jogador"]."</td>
                     <td>".$row["nickname_jogador"]."</td>
                     <td>".$row["mensagem"]."</td>
                     <td><img src='data:print_estatistica/png;base64," . base64_encode($row["print_estatistica"]) . "' width='100'/></td>
