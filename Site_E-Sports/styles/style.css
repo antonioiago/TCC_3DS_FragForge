@@ -107,3 +107,9 @@ footer{
         width: 100%; /* Card ocupa a tela toda no celular */
     }
 }
+
+
+
+.logofrag {
+justify-content: flex-start;
+}

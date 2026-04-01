@@ -5,11 +5,12 @@ include __DIR__.'/includes/head.php';
 <link rel="stylesheet" href="styles/form.css">
 
 <header>
-    <img src="logo.png">
-    <h2>
-        <a href="index.php" class="frag">FragForge</a>
-        
-    </h2>
+    
+        <img class="logofrag" src="includes/imagens/logo_frag.png">
+
+            <h2>
+                <a href="index.php" class="frag">FragForge</a>
+            </h2>
 
 </header>
 
