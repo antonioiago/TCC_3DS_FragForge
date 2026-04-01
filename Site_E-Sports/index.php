@@ -20,7 +20,7 @@ include __DIR__.'/includes/header.php';
                 <div class="boasv">
                     <title>
                         FragForge
-                    </title>
+                    </title><!-- asdawsdwasd -->
                         <h2>
                             <p>
                                 Bem vindo(a) ao FragForge! Sua última destinação para noticias de Overwatch!
