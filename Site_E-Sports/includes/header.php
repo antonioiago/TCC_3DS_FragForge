@@ -12,7 +12,13 @@
     session_start();
 
     if (isset($_SESSION['jogador']['id'])) {
-        echo '<div><p>Bem vindo, '.$_SESSION['jogador']['id'].'</p><a class="btn-login" href="sair.php">Sair</a></div>';
+        include __DIR__.'/conn.php';
+        $cmd = $conn->prepare("SELECT * from jogador where id_jogador = ?");
+        $cmd->bindParam(1, $_SESSION['jogador']['id']);
+        $cmd->execute();
+        $resultado = $cmd->fetch(PDO::FETCH_OBJ);
+
+        echo '<div><p>Bem vindo, '.$resultado->nickname_jogador.'</p><a class="btn-login" href="sair.php">Sair</a></div>';
     } else {
         echo '<p>Você não está logado! <a class="btn-login" href="form-login.php">Entre agora!</a>';
     }

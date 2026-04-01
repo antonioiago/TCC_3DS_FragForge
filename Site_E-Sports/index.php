@@ -20,7 +20,7 @@ include __DIR__.'/includes/header.php';
                 <div class="boasv">
                     <title>
                         FragForge
-                    </title>
+                    </title><!-- asdawsdwasd -->
                         <h2>
                             <p>
                                 Bem vindo(a) ao FragForge! Sua última destinação para noticias de Overwatch!
@@ -41,7 +41,31 @@ include __DIR__.'/includes/header.php';
                                 </p>
                             </a>
                         </div>
-
+<!-- DIV DAS POSTAGENS -->
+                    <div class="timeline">
+                        <button onclick="window.open('http://localhost/TCC_3DS_FragForge/Site_E-Sports/post.php', '_blank', 'width=600,height=400')">Criar postagem</button>
+                        <?php
+        $instancia = new PDO('mysql:host=localhost;dbname=fragforge; charset=utf8','root', 'root');
+        $stm = $instancia->query("SELECT 
+                                       -- j.id_jogador,
+                                        p.mensagem,
+                                        j.nickname_jogador,
+                                        p.print_estatistica     
+                                    FROM post p
+                                    JOIN jogador j ON p.id_jogador = j.id_jogador;");
+        echo "<table>";
+        echo "<tr><th>Nome</th><th>Mensagem</th><th>Imagem</tr>";
+        foreach ($stm as $row) {
+            echo "<tr>
+                    <td>".$row["nickname_jogador"]."</td>
+                    <td>".$row["mensagem"]."</td>
+                    <td><img src='data:print_estatistica/png;base64," . base64_encode($row["print_estatistica"]) . "' width='100'/></td>
+                </tr>";
+        }
+        echo "</table>";
+    ?>
+                    </div>
+<!-- DIV DAS POSTAGENS -->
                     <div class="card">
                         <img src="includes/imagens/overwatch2.jpg" alt="overwatch2">
                             <title>
