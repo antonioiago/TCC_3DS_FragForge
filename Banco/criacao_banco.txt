@@ -41,20 +41,13 @@ create table jogador
 	foreign key (id_equipe) references equipe (id_equipe)
 );
 
-create table highlight
-(
-	id_highlight int auto_increment primary key,
-    id_jogador int not null,
-    print_estatistica mediumblob,
-    jogada longblob,
-	foreign key (id_jogador) references jogador(id_jogador)
-);
-
 create table post
 (
 	id_post int auto_increment primary key,
     mensagem varchar(255) not null,
     comentario varchar(255),
+    print_estatistica mediumblob,
+    jogada longblob,
 	id_jogador int not null,
 	foreign key (id_jogador) references jogador(id_jogador)
 );
@@ -67,10 +60,3 @@ create table adm
     senha_adm varchar(100) not null,
     foto_adm mediumblob
 );
-
-
-select * from jogador;
-select * from highlight;
-select * from adm;
-select * from equipe;
-select * from funcao;
