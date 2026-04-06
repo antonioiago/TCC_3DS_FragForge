@@ -5,7 +5,7 @@
     $id_jogador = $_SESSION['jogador']['id'];
    
     ?>
-<form class="timeline" action="enviar_post.php" method="post">
+<form class="timeline" action="enviar_post.php" method="post" enctype="multipart/form-data">
     <h1>teste</h1>
     <input class="comentario" type="text" name="mensagem" id="mensagem"  placeholder="Escreve um post"><br>
     <input type="hidden" name="id_jogador" value="<?php echo $id_jogador; ?>">

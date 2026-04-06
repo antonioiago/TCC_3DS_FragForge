@@ -25,27 +25,36 @@ include __DIR__.'/includes/head.php';
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="cadastrar.php" onsubmit="return validarForm()">
+    <?php
+$conn = new mysqli("localhost", "root", "root", "fragforge");
+
+$funcoes = $conn->query("SELECT * FROM funcao");
+$patentes = $conn->query("SELECT * FROM patente");
+?>
+
+<form method="POST" action="cadastrar.php" onsubmit="return validarForm()">
         
-        <label>Nome de Usuário:</label>
-        <input type="text" name="nickname_jogador" required minlength="3">
+    <input type="text" name="nickname_jogador" placeholder="Usuário" required>
+    <input type="email" name="email_jogador" placeholder="Email" required>
+    <input type="text" name="codigo_battlenet" placeholder="BattleTag" required>
 
-        <label>Email:</label>
-        <input type="email" name="email_jogador" placeholder="nome@local.com" required>
+    <input type="password" name="senha_jogador" id="senha" placeholder="Senha" required>
+    <input type="password" name="chkpassword" id="chkpassword" placeholder="Repita a senha" required>
 
-        <label>Código Battle.net:</label>
-        <input type="text" name="codigo_battlenet" placeholder="Ex: Player#1234" required>
+    <select name="id_funcao" required>
+        <option value="">Função</option>
+        <?php while($f = $funcoes->fetch_assoc()) echo "<option value='{$f['id_funcao']}'>{$f['nome_funcao']}</option>"; ?>
+    </select>
 
-        <label>Senha:</label>
-        <input type="password" name="senha_jogador" id="senha" required minlength="6">
+    <select name="id_patente">
+        <option value="">Patente</option>
+        <?php while($p = $patentes->fetch_assoc()) echo "<option value='{$p['id_patente']}'>{$p['nome_patente']}</option>"; ?>
+    </select>
 
-        <label>Repita a senha:</label>
-        <input type="password" name="chkpassword" id="chkpassword" required>
+    
 
-        <input class="submit" type="submit" value="Cadastrar">
-    </form>
-
-    <p>Já possui uma conta? <a href="form-login.php">Entre aqui!</a></p>
+    <input type="submit" value="Cadastrar">
+</form>
 </main>
 
 <script>

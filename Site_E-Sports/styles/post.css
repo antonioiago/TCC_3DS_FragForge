@@ -1,45 +1,67 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+body {
+    background: #eaf3ff;
+    font-family: Arial, sans-serif;
 }
-form{
+
+.timeline {
     width: 400px;
-   
-    border-radius: 25px;
-    background-color: #888888;
-    border-color: #000000;
-    border-style: solid;
-    border-width: 2px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    justify-content: end;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
+    margin: 60px auto;
+    padding: 25px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.timeline h1 {
+    color: #2b6cb0;
+    margin-bottom: 20px;
+}
+
+.comentario {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    outline: none;
+    margin-bottom: 15px;
+    transition: 0.3s;
+}
+
+.comentario:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 5px rgba(49,130,206,0.5);
+}
+
+input[type="file"] {
+    margin-bottom: 15px;
+}
+
+input[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
     font-weight: bold;
-}
-label{
-    font-size: 12px;
-}
-h1{
-    color: #ffffff;
-}
-p, label{
-    color: #ffffff;
+    transition: 0.3s;
 }
 
-input{
-    height: 25px
+input[type="submit"]:hover {
+    background: #2b6cb0;
 }
-.submit{
+
+button {
     margin-top: 10px;
-    width: 100px;
-    align-self: center;
-    border-radius: 10px;
-    background-color: var(--primary_color);
-    border-color: #3a8af3;
-    color: #eeeeee;
+    background: transparent;
+    border: none;
+    color: #3182ce;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-.comentario{
+button:hover {
+    text-decoration: underline;
 }
