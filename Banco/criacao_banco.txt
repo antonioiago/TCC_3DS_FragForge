@@ -60,3 +60,11 @@ create table adm
     senha_adm varchar(100) not null,
     foto_adm mediumblob
 );
+
+CREATE TABLE recuperacao_senha (
+    id_recuperacao INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) NOT NULL,
+    token VARCHAR(100) NOT NULL,
+    data_expiracao DATETIME NOT NULL,
+    usado TINYINT(1) DEFAULT 0 -- 0 para não usado, 1 para já utilizado
+);
