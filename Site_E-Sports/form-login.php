@@ -30,7 +30,7 @@ include __DIR__.'/includes/head.php';
         </form>
         <div style="display: flex; justify-content: space-between">
             <a href="form-cadastro.php">Não possui conta?</a>
-            <a href="form-redfsenha.php">Esqueceu a senha?</a>
+            <a href="form-esqueciasenha.php">Esqueceu a senha?</a>
         </div>
     </div>
 </main>
