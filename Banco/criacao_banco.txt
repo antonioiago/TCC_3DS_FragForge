@@ -1,18 +1,16 @@
 create database if not exists fragforge;
 use fragforge;
 
-create table funcao
-(
-	id_funcao int not null primary key,
-    nome_funcao varchar(20) not null,
-    icon_funcao mediumblob
+CREATE TABLE funcao (
+    id_funcao INT NOT NULL PRIMARY KEY,
+    nome_funcao VARCHAR(20) NOT NULL,
+    icon_funcao VARCHAR(255)
 );
 
-create table patente
-(
-	id_patente int not null primary key,
-    nome_patente varchar(20) not null,
-    icon_patente mediumblob
+CREATE TABLE patente (
+    id_patente INT NOT NULL PRIMARY KEY,
+    nome_patente VARCHAR(20) NOT NULL,
+    icon_patente VARCHAR(255)
 );
 
 

@@ -1,14 +1,14 @@
-insert into funcao values
-(1,'tank','imagens/tank.webp'),
-(2,'dps','imagens/dps.webp'),
-(3,'sup','imagens/sup.webp');
+INSERT INTO patente (id_patente, nome_patente, icon_patente) VALUES
+(1, 'bronze', '/TCC_3DS_FragForge/Banco/imagens/bronze.webp'),
+(2, 'prata', '/TCC_3DS_FragForge/Banco/imagens/prata.webp'),
+(3, 'ouro', '/TCC_3DS_FragForge/Banco/imagens/ouro.webp'),
+(4, 'platina', '/TCC_3DS_FragForge/Banco/imagens/platina.webp'),
+(5, 'diamante', '/TCC_3DS_FragForge/Banco/imagens/diamante.webp'),
+(6, 'mestre', '/TCC_3DS_FragForge/Banco/imagens/mestre.webp'),
+(7, 'grão mestre', '/TCC_3DS_FragForge/Banco/imagens/graomestre.webp'),
+(8, 'champion', '/TCC_3DS_FragForge/Banco/imagens/champion.webp');
 
-insert into patente values
-(1, 'bronze', 'imagens/bronze.webp'),
-(2, 'prata', 'imagens/prata.webp'),
-(3, 'ouro', 'imagens/ouro.webp'),
-(4, 'platina', 'imagens/platina.webp'),
-(5, 'diamante', 'imagens/diamante.webp'),
-(6, 'mestre', 'imagens/mestre.webp'),
-(7, 'grão mestre','imagens/graomestre.webp'),
-(8, 'champion', 'imagens/champion.webp');
+INSERT INTO funcao (id_funcao, nome_funcao, icon_funcao) VALUES
+(1, 'tank', '/TCC_3DS_FragForge/Banco/imagens/tank.webp'),
+(2, 'dps',  '/TCC_3DS_FragForge/Banco/imagens/dps.webp'),
+(3, 'sup',  '/TCC_3DS_FragForge/Banco/imagens/sup.webp');

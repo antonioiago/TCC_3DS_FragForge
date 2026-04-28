@@ -3,6 +3,53 @@ include __DIR__.'/includes/head.php';
 include __DIR__.'/includes/header.php';
 ?>
 
+<style>
+.feed {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.post {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: 0.2s;
+}
+
+.post:hover {
+    transform: scale(1.01);
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.post-header strong {
+    flex: 1;
+    color: white;
+}
+
+.icon {
+    width: 28px;
+    height: 28px;
+}
+
+.mensagem {
+    margin: 10px 0;
+    color: #cbd5f5;
+}
+
+.post-img {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+</style>
+
 <main>
     <div class="boasv">
         <h2>
@@ -25,50 +72,64 @@ include __DIR__.'/includes/header.php';
                 Criar postagem
             </button>
             
-          <?php
+<?php
 try {
     $instancia = new PDO('mysql:host=localhost;dbname=fragforge;charset=utf8', 'root', 'root');
     $instancia->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $stm = $instancia->query("
-        SELECT p.mensagem, j.nickname_jogador, p.print_estatistica     
+        SELECT 
+            p.mensagem, 
+            j.nickname_jogador, 
+            p.print_estatistica,
+            f.icon_funcao,
+            pa.icon_patente
         FROM post p
         JOIN jogador j ON p.id_jogador = j.id_jogador
+        LEFT JOIN funcao f ON j.id_funcao = f.id_funcao
+        LEFT JOIN patente pa ON j.id_patente = pa.id_patente
+        ORDER BY p.id_post DESC
     ");
 
-    echo "<table border='1'>";
-    echo "<thead><tr><th>Nome</th><th>Mensagem</th><th>Imagem</th></tr></thead>";
-    echo "<tbody>";
+    echo "<div class='feed'>";
 
     foreach ($stm as $row) {
 
-        echo "<tr>";
-        echo "<td>" . htmlspecialchars($row["nickname_jogador"]) . "</td>";
-        echo "<td>" . htmlspecialchars($row["mensagem"]) . "</td>";
+        echo "<div class='post'>";
 
-        if (!empty($row["print_estatistica"])) {
+        // HEADER
+        echo "<div class='post-header'>";
+        
+        echo "<strong>" . htmlspecialchars($row["nickname_jogador"]) . "</strong>";
 
-            $imagemBinaria = $row["print_estatistica"];
-
-            
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-            $tipo = $finfo->buffer($imagemBinaria);
-
-            $imagem = base64_encode($imagemBinaria);
-
-            echo "<td><img src='data:{$tipo};base64,{$imagem}' width='150'></td>";
-
-        } else {
-            echo "<td>Sem imagem</td>";
+        if (!empty($row["icon_funcao"])) {
+            echo "<img class='icon' src='" . $row["icon_funcao"] . "'>";
         }
 
-        echo "</tr>";
+        if (!empty($row["icon_patente"])) {
+            echo "<img class='icon' src='" . $row["icon_patente"] . "'>";
+        }
+
+        echo "</div>";
+
+        // MENSAGEM
+        echo "<p class='mensagem'>" . htmlspecialchars($row["mensagem"]) . "</p>";
+
+        // IMAGEM
+        if (!empty($row["print_estatistica"])) {
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $tipo = $finfo->buffer($row["print_estatistica"]);
+            $img = base64_encode($row["print_estatistica"]);
+            echo "<img class='post-img' src='data:{$tipo};base64,{$img}'>";
+        }
+
+        echo "</div>";
     }
 
-    echo "</tbody></table>";
+    echo "</div>";
 
 } catch (PDOException $e) {
-    echo "Erro ao conectar: " . $e->getMessage();
+    echo "Erro: " . $e->getMessage();
 }
 ?>
         </div>
