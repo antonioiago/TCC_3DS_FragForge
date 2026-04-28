@@ -3,53 +3,6 @@ include __DIR__.'/includes/head.php';
 include __DIR__.'/includes/header.php';
 ?>
 
-<style>
-.feed {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.post {
-    background: #1e293b;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: 0.2s;
-}
-
-.post:hover {
-    transform: scale(1.01);
-}
-
-.post-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.post-header strong {
-    flex: 1;
-    color: white;
-}
-
-.icon {
-    width: 28px;
-    height: 28px;
-}
-
-.mensagem {
-    margin: 10px 0;
-    color: #cbd5f5;
-}
-
-.post-img {
-    width: 100%;
-    border-radius: 10px;
-    margin-top: 10px;
-}
-</style>
-
 <main>
     <div class="boasv">
         <h2>
