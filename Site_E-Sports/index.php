@@ -25,37 +25,52 @@ include __DIR__.'/includes/header.php';
                 Criar postagem
             </button>
             
-            <?php
-            try {
-                // Conexão com senha vazia para XAMPP
-                $instancia = new PDO('mysql:host=localhost;dbname=fragforge;charset=utf8', 'root', '');
-                $instancia->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+          <?php
+try {
+    $instancia = new PDO('mysql:host=localhost;dbname=fragforge;charset=utf8', 'root', 'root');
+    $instancia->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-                $stm = $instancia->query("
-                    SELECT p.mensagem, j.nickname_jogador, p.print_estatistica     
-                    FROM post p
-                    JOIN jogador j ON p.id_jogador = j.id_jogador
-                ");
+    $stm = $instancia->query("
+        SELECT p.mensagem, j.nickname_jogador, p.print_estatistica     
+        FROM post p
+        JOIN jogador j ON p.id_jogador = j.id_jogador
+    ");
 
-                echo "<table>";
-                echo "<thead><tr><th>Nome</th><th>Mensagem</th><th>Imagem</th></tr></thead>";
-                echo "<tbody>";
+    echo "<table border='1'>";
+    echo "<thead><tr><th>Nome</th><th>Mensagem</th><th>Imagem</th></tr></thead>";
+    echo "<tbody>";
 
-                foreach ($stm as $row) {
-                    $imagem = base64_encode($row["print_estatistica"]);
-                    echo "<tr>";
-                    echo "<td>" . htmlspecialchars($row["nickname_jogador"]) . "</td>";
-                    echo "<td>" . htmlspecialchars($row["mensagem"]) . "</td>";
-                    echo "<td><img src='data:image/jpg;base64,{$imagem}' width='100'></td>";
-                    echo "</tr>";
-                }
+    foreach ($stm as $row) {
 
-                echo "</tbody></table>";
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($row["nickname_jogador"]) . "</td>";
+        echo "<td>" . htmlspecialchars($row["mensagem"]) . "</td>";
 
-            } catch (PDOException $e) {
-                echo "<p style='color:red;'>Erro ao conectar ao banco: " . $e->getMessage() . "</p>";
-            }
-            ?>
+        if (!empty($row["print_estatistica"])) {
+
+            $imagemBinaria = $row["print_estatistica"];
+
+            
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $tipo = $finfo->buffer($imagemBinaria);
+
+            $imagem = base64_encode($imagemBinaria);
+
+            echo "<td><img src='data:{$tipo};base64,{$imagem}' width='150'></td>";
+
+        } else {
+            echo "<td>Sem imagem</td>";
+        }
+
+        echo "</tr>";
+    }
+
+    echo "</tbody></table>";
+
+} catch (PDOException $e) {
+    echo "Erro ao conectar: " . $e->getMessage();
+}
+?>
         </div>
 
         <div class="card">
