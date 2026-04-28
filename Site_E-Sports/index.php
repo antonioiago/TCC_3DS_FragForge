@@ -34,6 +34,7 @@ try {
         SELECT 
             p.mensagem, 
             j.nickname_jogador, 
+            j.id_jogador, -- 👈 IMPORTANTE
             p.print_estatistica,
             f.icon_funcao,
             pa.icon_patente
@@ -53,7 +54,12 @@ try {
         // HEADER
         echo "<div class='post-header'>";
         
-        echo "<strong>" . htmlspecialchars($row["nickname_jogador"]) . "</strong>";
+        // 🔗 NOME COM LINK PARA O PERFIL
+        echo "<strong>
+                <a href='perfil.php?id=" . $row["id_jogador"] . "' style='color:white; text-decoration:none;'>
+                    " . htmlspecialchars($row["nickname_jogador"]) . "
+                </a>
+              </strong>";
 
         if (!empty($row["icon_funcao"])) {
             echo "<img class='icon' src='" . $row["icon_funcao"] . "'>";
