@@ -1,0 +1,44 @@
+/* --- 3. COLUNA DE NOTÍCIAS (LARGURA CORRIGIDA) --- */
+.news-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 380px !important; /* Aumentamos de um valor pequeno para 380px */
+    gap: 20px !important;
+    flex-shrink: 0 !important;
+}
+
+.news-sidebar .card {
+    background: #ffffff !important;
+    padding: 0 !important; /* Imagem vai encostar nas bordas */
+    border-radius: 20px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    overflow: hidden !important;
+    display: block !important; /* Mudamos para block para evitar conflitos de flex */
+    width: 100% !important;
+}
+
+/* FIX DA IMAGEM: Ocupar largura total e manter altura proporcional */
+.news-sidebar .card img {
+    width: 100% !important;   /* Ocupa os 380px da sidebar */
+    height: 220px !important;  /* Altura fixa de banner */
+    object-fit: cover !important; /* Corta as sobras sem achatar */
+    display: block !important;
+}
+
+.card-content {
+    padding: 20px !important; /* Espaço para o texto não encostar na borda */
+    box-sizing: border-box !important;
+}
+
+.card-content h3 {
+    margin: 0 0 10px 0 !important;
+    font-size: 1.3rem !important;
+    line-height: 1.2 !important;
+    color: #333 !important;
+}
+
+.card-content p {
+    font-size: 0.95rem !important;
+    color: #555 !important;
+    margin: 0 !important;
+}

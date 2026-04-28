@@ -3,8 +3,16 @@
         FragForge
     </h2>
     <style>
-        p{
+        p {
             display: inline;
+        }
+        .link-perfil {
+            text-decoration: none;
+            color: inherit; /* Mantém a cor do texto original */
+            font-weight: bold;
+        }
+        .link-perfil:hover {
+            text-decoration: underline;
         }
     </style>
 
@@ -18,9 +26,17 @@
         $cmd->execute();
         $resultado = $cmd->fetch(PDO::FETCH_OBJ);
 
-        echo '<div><p>Bem vindo, '.$resultado->nickname_jogador.'</p><a class="btn-login" href="sair.php">Sair</a></div>';
+        // O nome agora é um link que aponta para perfil.php enviando o ID
+        echo '<div>
+                <p>Bem vindo, 
+                    <a class="link-perfil" href="perfil.php?id='.$resultado->id_jogador.'">'.
+                        $resultado->nickname_jogador.
+                    '</a>
+                </p>
+                <a class="btn-login" href="sair.php">Sair</a>
+              </div>';
     } else {
-        echo '<p>Você não está logado! <a class="btn-login" href="form-login.php">Entre agora!</a>';
+        echo '<p>Você não está logado! <a class="btn-login" href="form-login.php">Entre agora!</a></p>';
     }
     ?>
 </header>
