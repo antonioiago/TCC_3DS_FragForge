@@ -5,7 +5,23 @@ include __DIR__.'/includes/header.php';
 <link rel="stylesheet" href="styles/index.css">
 <main class="not">
     <aside class="news-sidebar">
+        
         <div class="card">
+            <img src="includes/imagens/overwatch.jpg" alt="Overwatch">
+            <div class="card-content">
+                <h3>Overwatch 2 News</h3>
+                <p>Ex-diretor revela pressões da Blizzard sobre lucros astronômicos.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <img src="includes/imagens/overwatch2.jpg" alt="Conquest">
+            <div class="card-content">
+                <h3>Conquest Meta</h3>
+                <p>Time Overwatch vence evento e libera nova skin Echo.</p>
+            </div>
+        </div>
+            <div class="card">
             <img src="includes/imagens/overwatch.jpg" alt="Overwatch">
             <div class="card-content">
                 <h3>Overwatch 2 News</h3>
