@@ -6,36 +6,36 @@ include __DIR__.'/includes/header.php';
 <main class="not">
     <aside class="news-sidebar">
         
-        <div class="card">
-            <img src="includes/imagens/overwatch.jpg" alt="Overwatch">
+        <a href="https://overwatch.blizzard.com/en-us/news/patch-notes/"><div class="card">
+            <img src="https://preview.redd.it/patch-notes-summary-for-s17-v0-hnarqy4jax8f1.jpeg?auto=webp&s=ae1b854f85a3659536becdf949e7044107a3e42d" alt="Overwatch">
             <div class="card-content">
-                <h3>Overwatch 2 News</h3>
-                <p>Ex-diretor revela pressões da Blizzard sobre lucros astronômicos.</p>
+                <h3>Patch Notes</h3>
+                <p>Notas da atualização do Overwatch – 28 de abril de 2026</p>
             </div>
-        </div>
+        </div></a>
 
-        <div class="card">
-            <img src="includes/imagens/overwatch2.jpg" alt="Conquest">
+        <a href="https://overwatch.blizzard.com/pt-br/heroes/"><div class="card">
+            <img src="https://assets.boostroyal.com/uploads/blog/1754907546303-image1.png" alt="Conquest">
             <div class="card-content">
-                <h3>Conquest Meta</h3>
-                <p>Time Overwatch vence evento e libera nova skin Echo.</p>
+                <h3>Overwatch</h3>
+                <p>Conheça os heróis</p>
             </div>
-        </div>
-            <div class="card">
-            <img src="includes/imagens/overwatch.jpg" alt="Overwatch">
+        </div></a>
+            <a href="https://overwatch.blizzard.com/pt-br/"><div class="card">
+            <img src="https://blz-contentstack-images.akamaized.net/v3/assets/blt2477dcaf4ebd440c/blt30aabe1c0e164812/6504ca8b0d91ee465b55006b/Action.jpg" alt="Overwatch">
             <div class="card-content">
-                <h3>Overwatch 2 News</h3>
-                <p>Ex-diretor revela pressões da Blizzard sobre lucros astronômicos.</p>
+                <h3>Overwatch</h3>
+                <p>Baixe agora</p>
             </div>
-        </div>
+        </div></a>
 
-        <div class="card">
-            <img src="includes/imagens/overwatch2.jpg" alt="Conquest">
+        <a href="https://overwatch.blizzard.com/pt-br/news/24266793/"><div class="card">
+            <img src="https://bnetcmsus-a.akamaihd.net/cms/blog_header/ao/AOA1HSHQ12FI1775525381310.png" alt="Conquest">
             <div class="card-content">
-                <h3>Conquest Meta</h3>
-                <p>Time Overwatch vence evento e libera nova skin Echo.</p>
+                <h3>Nova temporada</h3>
+                <p>Alcance alturas heroicas no Reinado da Talon – 2ª Temporada: Apogeu</p>
             </div>
-        </div>
+        </div></a>
     </aside>
 
     <section class="timeline">
