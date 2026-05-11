@@ -1,7 +1,10 @@
 <?php
 include __DIR__.'/includes/conn.php';
 
+
 session_start();
+
+
 
 // validar senha
 if ($_POST["senha_jogador"] != $_POST["chkpassword"]) {
