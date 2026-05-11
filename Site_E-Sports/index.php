@@ -6,8 +6,23 @@ include __DIR__.'/includes/header.php';
 <main class="not">
     <aside class="news-sidebar">
         
+        <a href="chat.php" class="chat-btn" title="Abrir Chat">
+        💬
+        </a>
+
+        <a href="javascript:void(0);" onclick="abrirChat()" class="chat-btn" title="Abrir Chat">
+        💬
+        </a>
+
+        <script>
+        function abrirChat() {
+            // Abre o arquivo chat.php em uma janela de 450x600 pixels
+            window.open('chat.php', 'ChatFragForge', 'width=450,height=600,scrollbars=no,resizable=no');}
+        </script>
+
         <a href="https://overwatch.blizzard.com/en-us/news/patch-notes/"><div class="card">
             <img src="https://preview.redd.it/patch-notes-summary-for-s17-v0-hnarqy4jax8f1.jpeg?auto=webp&s=ae1b854f85a3659536becdf949e7044107a3e42d" alt="Overwatch">
+            
             <div class="card-content">
                 <h3>Patch Notes</h3>
                 <p>Notas da atualização do Overwatch – 28 de abril de 2026</p>
