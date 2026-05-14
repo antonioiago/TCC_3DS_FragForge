@@ -30,7 +30,7 @@ include __DIR__.'/includes/header.php';
         </div></a>
 
         <a href="https://overwatch.blizzard.com/pt-br/heroes/"><div class="card">
-            <img src="https://assets.boostroyal.com/uploads/blog/1754907546303-image1.png" alt="Conquest">
+            <img src="https://bnetcmsus-a.akamaihd.net/cms/blog_header/2c/2C587UV06J9Q1778097666570.png" alt="Conquest">
             <div class="card-content">
                 <h3>Overwatch</h3>
                 <p>Conheça os heróis</p>
