@@ -190,6 +190,10 @@ function renderizarArquivoBlob($binario, $isPost = false) {
                 <button type="submit" class="btn-action">ATUALIZAR AGORA</button>
             </form>
         </div>
+        <div> <button class="btn-criar-postagem" onclick="window.open('pontuacao.php', '_blank', 'width=600,height=500')">
+            Enviar Estatisticas
+        </button>
+    </div>
         <?php endif; ?>
     </div>
 
