@@ -1,264 +1,159 @@
-/* IMPORTAR FONTE */
-
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
-
-/* RESET */
-
-*{
+/* IMPORTAR FONTE (Mantendo Arial conforme o site) */
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: Arial, sans-serif;
 }
 
-/* BODY */
-
-body{
-
+/* BODY - Seguindo o padrão de fundo claro do site */
+body {
     min-height: 100vh;
-
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-
-    padding-top: 140px;
+    padding-top: 120px; /* Espaço para o header fixo */
     padding-bottom: 40px;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    background:
-    linear-gradient(rgba(8,8,25,0.88), rgba(8,8,25,0.92)),
-    url('img/background-overwatch.jpg');
-
-    background-size: cover;
-    background-position: center;
+    background-color: #f4f4f9; /* Um cinza bem claro para destacar o card branco */
 }
 
-/* HEADER */
-
-header{
-
+/* HEADER - Idêntico ao seu site principal */
+header {
     position: fixed;
-
     top: 0;
     left: 0;
-
-    width: 100%;
-    height: 90px;
-
+    width: 99%;
+    height: 80px;
+    margin-top: 10px;
+    margin-left: 5px;
+    padding: 20px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-
-    background: rgba(20,20,40,0.70);
-
-    backdrop-filter: blur(12px);
-
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-
-    box-shadow: 0 4px 18px rgba(0,0,0,0.35);
-
+    background-color: #3432c7;
+    box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.5);
+    border-radius: 5px 5px 10px 10px;
     z-index: 999;
 }
 
 /* LOGO */
-
-.frag{
-
+.frag {
     color: white;
-
     text-decoration: none;
-
-    font-size: 46px;
-    font-weight: 700;
-
-    letter-spacing: 2px;
+    font-size: 30px;
+    font-weight: bold;
 }
 
-.frag span{
-
-    color: #ff8c00;
+.frag span {
+    color: white; /* Usando o verde de destaque do seu site */
 }
 
-/* CARD CADASTRO */
-
-.container-cadastro{
-
-    width: 380px;
-
-    padding: 28px;
-
-    margin-bottom: 40px;
-
-    border-radius: 24px;
-
-    background: rgba(20,20,35,0.82);
-
-    backdrop-filter: blur(15px);
-
-    border: 1px solid rgba(255,255,255,0.08);
-
-    box-shadow:
-    0 0 25px rgba(0,0,0,0.4),
-    0 0 10px rgba(255,140,0,0.08);
+/* CARD CADASTRO - Agora coerente com a classe .card do site */
+.container-cadastro {
+    width: 100%;
+    max-width: 400px;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 20px; /* Padrão dos seus outros cards */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    color: #000000;
 }
 
 /* TITULO */
-
-.container-cadastro h2,
-.container-cadastro h3{
-
+.container-cadastro h2 {
     text-align: center;
-
-    color: white;
-
-    font-size: 34px;
-
-    margin-bottom: 22px;
-
-    letter-spacing: 1px;
+    color: #3432c7;
+    font-size: 28px;
+    margin-bottom: 25px;
 }
 
 /* ERRO */
-
-.erro{
-
-    background: rgba(255,0,0,0.15);
-
-    color: #ff8080;
-
+.erro {
+    background: #ffe6e6;
+    color: #d93025;
     padding: 12px;
-
-    border-radius: 10px;
-
+    border-radius: 8px;
     margin-bottom: 18px;
-
     text-align: center;
+    font-size: 14px;
+    border: 1px solid #ffcccc;
 }
 
-/* INPUTS */
-
-.input-box{
-
-    margin-bottom: 16px;
+/* INPUTS - Estilo mais limpo */
+.input-box {
+    margin-bottom: 18px;
 }
 
 .input-box input,
-.input-box select{
-
+.input-box select {
     width: 100%;
-
     padding: 12px 15px;
-
-    border: none;
+    border: 1px solid #ddd;
     outline: none;
-
-    border-radius: 14px;
-
-    background: rgba(255,255,255,0.07);
-
-    color: white;
-
+    border-radius: 10px;
+    background: #f9f9f9;
+    color: #333;
     font-size: 16px;
-
     transition: 0.3s;
 }
 
-/* PLACEHOLDER */
-
-.input-box input::placeholder{
-
-    color: rgba(255,255,255,0.55);
-}
-
-/* INPUT FOCUS */
-
+/* INPUT FOCUS - Brilha no azul do tema */
 .input-box input:focus,
-.input-box select:focus{
-
-    border: 1px solid #ff8c00;
-
-    box-shadow:
-    0 0 12px rgba(255,140,0,0.25);
+.input-box select:focus {
+    border-color: #3432c7;
+    box-shadow: 0 0 8px rgba(52, 50, 199, 0.2);
 }
 
-/* SELECT */
-
-.input-box select{
-
-    cursor: pointer;
-}
-
-/* OPTION */
-
-option{
-
-    background: #1d1d2e;
-}
-
-/* BOTÃO */
-
-.btn-cadastro{
-
+/* BOTÃO - Baseado no .btn-criar-postagem do site */
+.btn-cadastro {
     width: 100%;
-
-    margin-top: 8px;
-
-    padding: 13px;
-
+    margin-top: 10px;
+    padding: 14px;
     border: none;
-
-    border-radius: 14px;
-
-    background:
-    linear-gradient(90deg,#ff8c00,#ff5e00);
-
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3432c7 0%, #4e4ced 100%);
     color: white;
-
-    font-size: 18px;
-    font-weight: 700;
-
-    letter-spacing: 1px;
-
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
     cursor: pointer;
-
-    transition: 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 50, 199, 0.3);
 }
 
-/* HOVER BOTÃO */
-
-.btn-cadastro:hover{
-
+.btn-cadastro:hover {
+    background: linear-gradient(135deg, #4bf89c 0%, #2ecc71 100%);
+    color: #000;
     transform: translateY(-2px);
-
-    box-shadow:
-    0 0 20px rgba(255,140,0,0.35);
+    box-shadow: 0 6px 20px rgba(75, 248, 156, 0.4);
 }
 
 /* TEXTO LOGIN */
-
-.login-link{
-
+.login-link {
     text-align: center;
-
-    margin-top: 18px;
-
-    color: rgba(255,255,255,0.7);
-
-    font-size: 16px;
+    margin-top: 20px;
+    color: #666;
+    font-size: 14px;
 }
 
-.login-link a{
-
-    color: #ff8c00;
-
+.login-link a {
+    color: #3432c7;
     text-decoration: none;
-
-    font-weight: 700;
+    font-weight: bold;
 }
 
-.login-link a:hover{
-
+.login-link a:hover {
     text-decoration: underline;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 600px) {
+    .container-cadastro {
+        width: 90%;
+    }
+    
+    header {
+        width: 95%;
+    }
 }

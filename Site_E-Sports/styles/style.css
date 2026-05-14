@@ -1,231 +1,180 @@
+/* RESET */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-
-
-
 body {
   font-family: Arial, sans-serif;
-  background: #ffffff;
-  color: #ffffff;
+  /* Degradê suave no fundo para tirar o "branco chapado" */
+  background: linear-gradient(180deg, #ffffff 0%, #f0f2f5 100%);
+  color: #333; /* Texto escuro para leitura no fundo claro */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
- 
-}
-header{
-    padding: 20px;
-    margin-top: 10px;
-    margin-left: 5px;
-    top: 0;
-    left: 0;
-    z-index: 999;
-    width:99%;
-    box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.5);
-    background-color: #3432c7;
-    display: flex;
-    justify-content: space-between;
-    border-radius: 5px 5px 10px 10px;
-    position: fixed;
-    
 }
 
-
-
-.frag{
-    font-size: 30px;
+/* HEADER COM DEGRADÊ */
+header {
+  padding: 20px;
+  margin-top: 10px;
+  margin-left: 5px;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  width: 99%;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  /* Degradê do Azul para um Tom levemente mais claro */
+  background: linear-gradient(90deg, #3432c7 0%, #4e4ced 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 5px 5px 10px 10px;
+  position: fixed;
 }
 
+.frag {
+  font-size: 30px;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
 
-/* texto de boas vindas ao site*/
-.boasv{
+.frag span {
+  color: #4bf89c; /* Ponto verde de destaque */
+}
+
+/* TEXTO DE BOAS VINDAS */
+.boasv {
   text-align: center;
   padding: 20px;
-  margin-top: 70px;
+  margin-top: 100px; /* Aumentado para não sumir atrás do header fixo */
 }
 
-.not{
-    display: flex;
-    justify-content: space-between; /* Espaço entre os cards */
-    gap: 20px; /* Espaço entre as colunas */
-    flex-wrap: wrap; /* Permite que eles pulem de linha no celular */
+.not {
+  display: flex;
+  justify-content: center; 
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 20px;
 }
 
-.card {
-    padding: 20px;
-    margin: 20px;
-    color: #000000;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    border-radius: 20px;
-    width: 25%;
-    height: 10%;
-    justify-content: space-between;
-    box-sizing: border-box;
+/* CARDS */
+.card, .timeline {
+  padding: 20px;
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-radius: 20px;
+  box-sizing: border-box;
+  transition: transform 0.3s ease;
 }
-.timeline{
-    padding: 20px;
-    margin: 20px;
-    color: #000000;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    border-radius: 20px;
-    width:38%;
-    height: 18%;
-    justify-content: space-between;
-    box-sizing: border-box;
+
+.card { width: 25%; }
+.timeline { width: 38%; }
+
+.card:hover, .timeline:hover {
+  transform: translateY(-5px);
 }
 
 .card img {
-    border-radius: 20px;
-    width: 250px;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 250px;
 }
 
-/*estilização do botão de login*/
+/* BOTÃO DE LOGIN COM DEGRADÊ PRETO/CINZA */
 .btn-login {
-    background: #000000;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    margin-left: 10px;
-    transition: 0.3s;
+  background: linear-gradient(135deg, #000000 0%, #333333 100%);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 10px;
+  transition: 0.3s;
+  display: inline-block;
 }
-
-/*esse hover é o efeito que da quando passa o mouse em cima*/
 
 .btn-login:hover {
-    background: #4bf89c;
-    transform: scale(1.05);
+  /* Degradê Verde ao passar o mouse */
+  background: linear-gradient(135deg, #4bf89c 0%, #2ecc71 100%);
+  color: #000;
+  transform: scale(1.05);
 }
 
-main{
-    background-color: #ffffff;
-    flex: 1;
-}
-footer{
-    padding: 7px;
-    background-color: #3432c7;
-    border-radius: 20px 20px 0px 0px;
+main {
+  flex: 1;
+  padding-bottom: 40px;
 }
 
-
-/*responsividade para telas menores que 600px*/
-@media (max-width: 600px) {
-    .card {
-        width: 100%; /* Card ocupa a tela toda no celular */
-    }
+/* FOOTER COM DEGRADÊ REVERSO */
+footer {
+  padding: 15px;
+  background: linear-gradient(90deg, #4e4ced 0%, #3432c7 100%);
+  border-radius: 20px 20px 0px 0px;
+  text-align: center;
+  color: white;
 }
 
-
-
-.logofrag {
-justify-content: flex-start;
-}
-
-/* Estilização do botão de criar postagem */
+/* BOTÃO CRIAR POSTAGEM (GRADIENTE JÁ EXISTENTE, AJUSTADO) */
 .btn-criar-postagem {
-    background: linear-gradient(135px, #3432c7 0%, #4e4ced 100%);
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 14px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(52, 50, 199, 0.3);
-    margin-bottom: 20px; /* Espaço para a tabela não colar no botão */
+  background: linear-gradient(135deg, #3432c7 0%, #4e4ced 100%);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(52, 50, 199, 0.3);
+  margin-bottom: 20px;
 }
 
 .btn-criar-postagem:hover {
-    background: linear-gradient(135px, #4bf89c 0%, #2ecc71 100%); /* Cor de destaque ao passar o mouse */
-    color: #000;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(75, 248, 156, 0.4);
+  background: linear-gradient(135deg, #4bf89c 0%, #2ecc71 100%);
+  color: #000;
+  transform: translateY(-3px);
 }
 
-.btn-criar-postagem:active {
-    transform: translateY(1px);
-}
-
-
+/* TABELAS E FEED */
 .timeline table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    color: #333;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  color: #333;
 }
 
 .timeline th {
-    background-color: #f8f9fa;
-    padding: 10px;
-    border-bottom: 2px solid #3432c7;
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-bottom: 2px solid #3432c7;
 }
-
-.timeline td {
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-}
-
-.timeline img {
-    border-radius: 8px;
-    object-fit: cover;
-}
-
-
-
-
-
-
-
 
 .feed {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .post {
-    background: #1e293b;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: 0.2s;
+  background: #1e293b; /* Mantendo o post escuro para contraste */
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: 0.2s;
 }
 
-.post:hover {
-    transform: scale(1.01);
-}
-
-.post-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.post-header strong {
-    flex: 1;
-    color: white;
-}
-
-.icon {
-    width: 28px;
-    height: 28px;
-}
-
-.mensagem {
-    margin: 10px 0;
-    color: #cbd5f5;
-}
-
-.post-img {
-    width: 100%;
-    border-radius: 10px;
-    margin-top: 10px;
+/* RESPONSIVIDADE */
+@media (max-width: 600px) {
+  .card, .timeline {
+    width: 90%;
+    margin: 10px auto;
+  }
 }
