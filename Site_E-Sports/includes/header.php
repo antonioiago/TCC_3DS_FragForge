@@ -31,6 +31,7 @@
         </style>
 
         <a class="link-header" href="lideranca.php">🏆 Liderança</a>
+        <a class="link-header" href="equipes.php">🛡️ Equipes</a>
 
         <?php
         // Evita duplicar o session_start caso ele já tenha sido iniciado em páginas pai (ex: index.php)

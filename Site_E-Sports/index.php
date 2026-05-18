@@ -5,10 +5,55 @@ include __DIR__.'/includes/header.php';
 // Captura os filtros da URL (via GET) com valores padrão
 $ordenar = $_GET['ordenar'] ?? 'recente';
 $funcao  = $_GET['funcao'] ?? 'todas';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$usuario_logado = isset($_SESSION['jogador']['id']);
+$id_jogador = $usuario_logado ? $_SESSION['jogador']['id'] : null;
+
+// Conexão principal com o banco de dados
+try {
+    $instancia = new PDO('mysql:host=localhost;dbname=fragforge;charset=utf8', 'root', 'root');
+    $instancia->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (Exception $e) {
+    echo "<div style='text-align:center; padding:20px; color:red;'>⚠️ Erro ao conectar ao banco de dados.</div>";
+    exit;
+}
+
+// --- LOGICA DE SUBMISSÃO DA NOVA POSTAGEM (DENTRO DO MODAL) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $usuario_logado) {
+    $mensagem = trim($_POST['mensagem']);
+    $print_estatistica = null;
+    $jogada = null;
+
+    // Upload de Imagem (print_estatistica)
+    if (isset($_FILES['print_estatistica']) && $_FILES['print_estatistica']['error'] == 0) {
+        $print_estatistica = file_get_contents($_FILES['print_estatistica']['tmp_name']);
+    }
+
+    // Upload de Vídeo (jogada)
+    if (isset($_FILES['jogada']) && $_FILES['jogada']['error'] == 0) {
+        $jogada = file_get_contents($_FILES['jogada']['tmp_name']);
+    }
+
+    if (!empty($mensagem)) {
+        $stmt = $instancia->prepare("INSERT INTO post (mensagem, print_estatistica, jogada, id_jogador) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$mensagem, $print_estatistica, $jogada, $id_jogador]);
+        
+        // Recarrega a página atual para exibir o novo post limpo
+        echo "<script>window.location.href='index.php';</script>";
+        exit;
+    }
+}
 ?>
 <link rel="stylesheet" href="styles/index.css">
 
 <style>
+    /* Forçar cabeçalho branco */
+    header, header a, header span, header li, header div { color: #ffffff !important; }
+
     .card-link {
         text-decoration: none;
         color: inherit;
@@ -18,6 +63,49 @@ $funcao  = $_GET['funcao'] ?? 'todas';
         text-decoration: none;
         color: inherit;
     }
+
+    /* --- ESTILIZAÇÃO DO NOVO MODAL DE POSTAGEM --- */
+    .modal-post { 
+        display: none; 
+        position: fixed; 
+        top: 0; left: 0; 
+        width: 100%; height: 100%; 
+        background: rgba(15, 23, 42, 0.6); 
+        backdrop-filter: blur(4px); 
+        justify-content: center; 
+        align-items: center; 
+        z-index: 9999; 
+    }
+    .modal-post-content { 
+        background: #ffffff; 
+        width: 90%; 
+        max-width: 550px; 
+        padding: 24px; 
+        border-radius: 16px; 
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); 
+        position: relative; 
+        animation: surgimentoRapido 0.2s ease-out;
+    }
+    
+    @keyframes surgimentoRapido {
+        from { transform: scale(0.96); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
+    .modal-post-title { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; }
+    .btn-close-modal { background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; line-height: 1; }
+    .btn-close-modal:hover { color: #475569; }
+
+    .textarea-post { width: 100%; height: 120px; border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px; font-size: 15px; outline: none; resize: none; font-family: inherit; box-sizing: border-box; color: #1e293b; }
+    .textarea-post:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    
+    .file-input-group { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+    .file-label { font-size: 13px; font-weight: 700; color: #475569; }
+    .file-field { font-size: 13px; color: #64748b; }
+
+    .btn-submit-post { background: #2563eb; color: #ffffff; border: none; width: 100%; padding: 12px; font-weight: 700; font-size: 14px; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin-top: 20px; transition: background 0.2s; }
+    .btn-submit-post:hover { background: #1d4ed8; }
 </style>
 
 <main class="not">
@@ -106,94 +194,138 @@ $funcao  = $_GET['funcao'] ?? 'todas';
             </form>
         </div>
 
-        <button class="btn-criar-postagem" onclick="window.open('post.php', '_blank', 'width=600,height=500')" style="background: #2563eb; color: #ffffff; width:100%; border-radius:12px; padding:12px; font-weight:bold; margin-bottom: 20px; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(37,99,235,0.2);">
+        <button class="btn-criar-postagem" onclick="abrirModalPost()" style="background: #2563eb; color: #ffffff; width:100%; border-radius:12px; padding:12px; font-weight:bold; margin-bottom: 20px; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(37,99,235,0.2);">
             + CRIAR NOVA POSTAGEM
         </button>
 
         <div class="feed">
             <?php
-try {
-    $instancia = new PDO('mysql:host=localhost;dbname=fragforge;charset=utf8', 'root', 'root');
-    $instancia->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            try {
+                $whereClauses = [];
+                $params = [];
+                if ($funcao !== 'todas') {
+                    $whereClauses[] = "f.nome_funcao = :funcao";
+                    $params[':funcao'] = $funcao;
+                }
+                $whereSql = !empty($whereClauses) ? "WHERE " . implode(" AND ", $whereClauses) : "";
 
-    $whereClauses = [];
-    $params = [];
-    if ($funcao !== 'todas') {
-        $whereClauses[] = "f.nome_funcao = :funcao";
-        $params[':funcao'] = $funcao;
-    }
-    $whereSql = !empty($whereClauses) ? "WHERE " . implode(" AND ", $whereClauses) : "";
+                switch ($ordenar) {
+                    case 'maior_pontuacao':
+                        $orderBySql = "ORDER BY j.pontuacao_jogador DESC, p.id_post DESC";
+                        break;
+                    case 'maior_rank':
+                        $orderBySql = "ORDER BY j.id_patente DESC, j.pontuacao_jogador DESC, p.id_post DESC";
+                        break;
+                    case 'recente':
+                    default:
+                        $orderBySql = "ORDER BY p.id_post DESC";
+                        break;
+                }
 
-    switch ($ordenar) {
-        case 'maior_pontuacao':
-            $orderBySql = "ORDER BY j.pontuacao_jogador DESC, p.id_post DESC";
-            break;
-        case 'maior_rank':
-            $orderBySql = "ORDER BY j.id_patente DESC, j.pontuacao_jogador DESC, p.id_post DESC";
-            break;
-        case 'recente':
-        default:
-            $orderBySql = "ORDER BY p.id_post DESC";
-            break;
-    }
+                $query_string = "
+                    SELECT p.id_post, p.mensagem, j.nickname_jogador, j.id_jogador, j.foto_jogador, 
+                           p.print_estatistica, p.jogada, f.icon_funcao, pa.icon_patente
+                    FROM post p
+                    JOIN jogador j ON p.id_jogador = j.id_jogador
+                    LEFT JOIN funcao f ON j.id_funcao = f.id_funcao
+                    LEFT JOIN patente pa ON j.id_patente = pa.id_patente
+                    $whereSql
+                    $orderBySql
+                ";
 
-    $query_string = "
-        SELECT p.id_post, p.mensagem, j.nickname_jogador, j.id_jogador, j.foto_jogador, 
-               p.print_estatistica, p.jogada, f.icon_funcao, pa.icon_patente
-        FROM post p
-        JOIN jogador j ON p.id_jogador = j.id_jogador
-        LEFT JOIN funcao f ON j.id_funcao = f.id_funcao
-        LEFT JOIN patente pa ON j.id_patente = pa.id_patente
-        $whereSql
-        $orderBySql
-    ";
+                $stmt = $instancia->prepare($query_string);
+                $stmt->execute($params);
+                $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $stmt = $instancia->prepare($query_string);
-    $stmt->execute($params);
-    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                if (count($resultados) > 0) {
+                    foreach ($resultados as $row) {
+                        echo "<div class='post' style='background: #1e293b; border-radius: 12px; padding: 20px; color: white; margin-bottom: 20px;'>";
+                            echo "<div class='post-header' style='display:flex; align-items:center; gap:12px; margin-bottom:12px;'>";
+                                
+                                if($row['foto_jogador']) {
+                                    $pfp = base64_encode($row['foto_jogador']);
+                                    echo "<img src='data:image/jpeg;base64,{$pfp}' class='foto-jogador-feed' style='width:50px; height:50px; border-radius:50%; object-fit:cover;'>";
+                                }
 
-    if (count($resultados) > 0) {
-        foreach ($resultados as $row) {
-            echo "<div class='post' style='background: #1e293b; border-radius: 12px; padding: 20px; color: white; margin-bottom: 20px;'>";
-                echo "<div class='post-header' style='display:flex; align-items:center; gap:12px; margin-bottom:12px;'>";
-                    
-                    if($row['foto_jogador']) {
-                        $pfp = base64_encode($row['foto_jogador']);
-                        echo "<img src='data:image/jpeg;base64,{$pfp}' class='foto-jogador-feed' style='width:50px; height:50px; border-radius:50%; object-fit:cover;'>";
+                                echo "<div style='display:flex; flex-direction:column;'>";
+                                    echo "<strong><a href='perfil.php?id=".$row['id_jogador']."' style='color:white; text-decoration:none;'>".htmlspecialchars($row['nickname_jogador'])."</a></strong>";
+                                echo "</div>";
+                            echo "</div>"; 
+
+                            echo "<p style='margin: 10px 0;'>".htmlspecialchars($row['mensagem'])."</p>";
+
+                            if($row['print_estatistica']){
+                                $img = base64_encode($row['print_estatistica']);
+                                echo "<img class='post-img' src='data:image/jpeg;base64,{$img}' style='max-width:100%; border-radius:8px; margin-top:10px;'>";
+                            }
+
+                            if($row['jogada']){
+                                echo "<div style='margin-top:10px;'>";
+                                    echo "<video controls style='width:100%; border-radius:8px; background:black;'>";
+                                        echo "<source src='exibir_video.php?id=".$row['id_post']."' type='video/mp4'>";
+                                        echo "Seu navegador não suporta vídeos.";
+                                    echo "</video>";
+                                echo "</div>";
+                            }
+                        echo "</div>";
                     }
-
-                    echo "<div style='display:flex; flex-direction:column;'>";
-                        echo "<strong><a href='perfil.php?id=".$row['id_jogador']."' style='color:white; text-decoration:none;'>".htmlspecialchars($row['nickname_jogador'])."</a></strong>";
-                    echo "</div>";
-                echo "</div>"; 
-
-                echo "<p style='margin: 10px 0;'>".htmlspecialchars($row['mensagem'])."</p>";
-
-                if($row['print_estatistica']){
-                    $img = base64_encode($row['print_estatistica']);
-                    echo "<img class='post-img' src='data:image/jpeg;base64,{$img}' style='max-width:100%; border-radius:8px; margin-top:10px;'>";
+                } else {
+                    echo "<div style='text-align:center; padding: 40px; background:#1e293b; border-radius:12px; color:#64748b;'><p>Nenhuma postagem encontrada para esse filtro.</p></div>";
                 }
-
-                if($row['jogada']){
-                    echo "<div style='margin-top:10px;'>";
-                        echo "<video controls style='width:100%; border-radius:8px; background:black;'>";
-                            echo "<source src='exibir_video.php?id=".$row['id_post']."' type='video/mp4'>";
-                            echo "Seu navegador não suporta vídeos.";
-                        echo "</video>";
-                    echo "</div>";
-                }
-            echo "</div>";
-        }
-    } else {
-        echo "<div style='text-align:center; padding: 40px; background:#1e293b; border-radius:12px; color:#64748b;'><p>Nenhuma postagem encontrada para esse filtro.</p></div>";
-    }
-} catch (Exception $e) { 
-    echo "<p style='color:white;'>Erro ao carregar o feed.</p>"; 
-}
-?>
+            } catch (Exception $e) { 
+                echo "<div style='text-align:center; padding:20px; color:white;'>Erro ao carregar o feed.</div>"; 
+            }
+            ?>
         </div>
     </section>
 </main>
+
+<div id="modalNovaPostagem" class="modal-post" onclick="fecharModalPost()">
+    <div class="modal-content modal-post-content" onclick="event.stopPropagation();">
+        
+        <div class="modal-post-header">
+            <h3 class="modal-post-title">Nova Postagem</h3>
+            <button class="btn-close-modal" onclick="fecharModalPost()">&times;</button>
+        </div>
+
+        <?php if ($usuario_logado): ?>
+            <form method="POST" action="index.php" enctype="multipart/form-data">
+                
+                <textarea name="mensagem" class="textarea-post" placeholder="No que você está pensando hoje? Compartilhe conquistas ou jogadas..." required></textarea>
+                
+                <div class="file-input-group">
+                    <label class="file-label">📸 Print de Estatística (Imagem):</label>
+                    <input type="file" name="print_estatistica" accept="image/*" class="file-field">
+                </div>
+
+                <div class="file-input-group">
+                    <label class="file-label">🎬 Highlight da Jogada (Vídeo MP4):</label>
+                    <input type="file" name="jogada" accept="video/mp4" class="file-field">
+                </div>
+
+                <button type="submit" name="acao_postar" class="btn-submit-post">Publicar no Feed</button>
+            </form>
+        <?php else: ?>
+            <div style="text-align:center; padding: 20px 0; color:#475569;">
+                🔒 <br><p style="margin-top:10px;">Você precisa fazer <a href="form-login.php" style="color:#2563eb; font-weight:bold; text-decoration:underline;">Login</a> para poder criar uma postagem.</p>
+            </div>
+        <?php endif; ?>
+
+    </div>
+</div>
+
+<script>
+// Funções JavaScript de controle da janela modal
+function abrirModalPost() {
+    document.getElementById('modalNovaPostagem').style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // Evita o scroll de fundo
+}
+
+function fecharModalPost() {
+    document.getElementById('modalNovaPostagem').style.display = 'none';
+    document.body.style.overflow = 'auto'; // Habilita o scroll novamente
+}
+</script>
 
 <footer>
     <p>&copy; 2026 FragForge - Todos os direitos reservados.</p>

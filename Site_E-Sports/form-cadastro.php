@@ -45,7 +45,7 @@ $patentes = $conn->query("SELECT * FROM patente");
         </div>
 
         <div class="input-box">
-            <input type="text" name="codigo_battlenet" placeholder="BattleTag" required>
+            <input type="text" name="codigo_battlenet" placeholder="BattleTag ex: jogador#1234" required>
         </div>
 
         <div class="input-box">

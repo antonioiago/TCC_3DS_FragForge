@@ -68,6 +68,11 @@ try {
 ?>
 
 <style>
+    /* Força os textos, links e parágrafos do header a ficarem brancos */
+    header, header a, header p, header h2, header .link-header, header .link-perfil {
+        color: #ffffff !important;
+    }
+
     body { background: #f8fafc; color: #1e293b; font-family: 'Segoe UI', system-ui, sans-serif; }
     .leaderboard-container { max-width: 1000px; margin: 30px auto; padding: 0 20px; box-sizing: border-box; }
     
@@ -100,8 +105,8 @@ try {
 
     .player-profile { display: flex; align-items: center; gap: 12px; }
     .player-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0; background: #e2e8f0; }
-    .player-name { font-weight: 700; color: #0f172a; text-decoration: none; transition: color 0.15s; }
-    .player-name:hover { color: #2563eb; }
+    .player-name { font-weight: 700; color: #0f172a !important; text-decoration: none; transition: color 0.15s; }
+    .player-name:hover { color: #2563eb !important; }
     .player-tag { font-size: 12px; color: #94a3b8; font-weight: 400; }
     .player-team { font-size: 12px; background: #eff6ff; color: #1e40af; padding: 2px 8px; border-radius: 20px; font-weight: 600; display: inline-block; }
 

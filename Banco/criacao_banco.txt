@@ -66,3 +66,22 @@ CREATE TABLE recuperacao_senha (
     data_expiracao DATETIME NOT NULL,
     usado TINYINT(1) DEFAULT 0 -- 0 para não usado, 1 para já utilizado
 );
+
+
+CREATE TABLE IF NOT EXISTS solicitacao_equipe (
+    id_solicitacao INT AUTO_INCREMENT PRIMARY KEY,
+    id_jogador INT NOT NULL,
+    id_equipe INT NOT NULL,
+    FOREIGN KEY (id_jogador) REFERENCES jogador(id_jogador) ON DELETE CASCADE,
+    FOREIGN KEY (id_equipe) REFERENCES equipe(id_equipe) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS mural_equipe (
+    id_mural INT AUTO_INCREMENT PRIMARY KEY,
+    id_equipe INT NOT NULL,
+    id_jogador INT NOT NULL,
+    mensagem TEXT NOT NULL,
+    data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_equipe) REFERENCES equipe(id_equipe) ON DELETE CASCADE,
+    FOREIGN KEY (id_jogador) REFERENCES jogador(id_jogador) ON DELETE CASCADE
+);
