@@ -43,6 +43,34 @@ if ($usuario_logado) {
     }
 }
 
+// --- FUNÇÃO PARA ATUALIZAR A PONTUAÇÃO DA EQUIPE ---
+function atualizarPontuacaoEquipe($conn, $id_equipe) {
+    if (empty($id_equipe)) return;
+
+    // Soma a pontuação de todos os jogadores pertencentes a esta equipe
+    $stmtSoma = $conn->prepare("SELECT SUM(COALESCE(pontuacao_jogador, 0)) FROM jogador WHERE id_equipe = ?");
+    $stmtSoma->execute([$id_equipe]);
+    $total_pontos = $stmtSoma->fetchColumn();
+
+    $total_pontos = $total_pontos ? $total_pontos : 0;
+
+    // Atualiza o registro da equipe correspondente
+    $stmtUpdate = $conn->prepare("UPDATE equipe SET pontuacao_equipe = ? WHERE id_equipe = ?");
+    $stmtUpdate->execute([$total_pontos, $id_equipe]);
+}
+
+// --- CORREÇÃO/SINCRONIZAÇÃO: Atualiza a pontuação de todas as equipes existentes ao carregar a página ---
+try {
+    $stmtTodasEquipes = $conn->query("SELECT id_equipe FROM equipe");
+    $equipes_ids = $stmtTodasEquipes->fetchAll(PDO::FETCH_COLUMN);
+    foreach ($equipes_ids as $id_eq) {
+        atualizarPontuacaoEquipe($conn, $id_eq);
+    }
+} catch (Exception $e) {
+    // Falha silenciosa para não quebrar o layout se o banco falhar temporariamente
+}
+
+
 // --- PROCESSAMENTO DE AÇÕES (POST) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $usuario_logado) {
     
@@ -50,8 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $usuario_logado) {
     if (isset($_POST['acao_expulsar']) && !empty($_POST['id_membro_expulsar']) && $eh_lider) {
         $id_membro = $_POST['id_membro_expulsar'];
         if ($id_membro != $id_jogador) {
+            $id_equipe_atual = $jogador_info['id_equipe'];
             $stmt = $conn->prepare("UPDATE jogador SET id_equipe = NULL WHERE id_jogador = ? AND id_equipe = ?");
-            $stmt->execute([$id_membro, $jogador_info['id_equipe']]);
+            $stmt->execute([$id_membro, $id_equipe_atual]);
+            
+            atualizarPontuacaoEquipe($conn, $id_equipe_atual);
         }
         echo "<script>window.location.href='equipes.php';</script>";
         exit;
@@ -72,12 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $usuario_logado) {
     if (isset($_POST['acao_criar']) && !empty($_POST['nome_equipe'])) {
         if (empty($jogador_info['id_equipe']) && !$solicitacao_pendente) {
             $nome_equipe = trim($_POST['nome_equipe']);
-            $stmt = $conn->prepare("INSERT INTO equipe (nome_equipe) VALUES (?)");
+            $stmt = $conn->prepare("INSERT INTO equipe (nome_equipe, pontuacao_equipe) VALUES (?, 0)");
             $stmt->execute([$nome_equipe]);
             $id_nova_equipe = $conn->lastInsertId();
             
             $stmt = $conn->prepare("UPDATE jogador SET id_equipe = ? WHERE id_jogador = ?");
             $stmt->execute([$id_nova_equipe, $id_jogador]);
+
+            atualizarPontuacaoEquipe($conn, $id_nova_equipe);
             echo "<script>window.location.href='equipes.php';</script>";
             exit;
         }
@@ -94,12 +127,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $usuario_logado) {
         }
     }
 
-    // Sair ou Cancelar Pedido
+    // Sair da Equipe
     if (isset($_POST['acao_sair'])) {
+        $id_equipe_antiga = $jogador_info['id_equipe'] ?? null;
+
         $stmt = $conn->prepare("UPDATE jogador SET id_equipe = NULL WHERE id_jogador = ?");
         $stmt->execute([$id_jogador]);
         $stmt = $conn->prepare("DELETE FROM solicitacao_equipe WHERE id_jogador = ?");
         $stmt->execute([$id_jogador]);
+        
+        if ($id_equipe_antiga) {
+            atualizarPontuacaoEquipe($conn, $id_equipe_antiga);
+        }
+
         echo "<script>window.location.href='equipes.php';</script>";
         exit;
     }
@@ -107,10 +147,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $usuario_logado) {
     // Aceitar Jogador
     if (isset($_POST['acao_aceitar']) && !empty($_POST['id_candidato']) && $eh_lider) {
         $id_candidato = $_POST['id_candidato'];
+        $id_equipe_atual = $jogador_info['id_equipe'];
+
         $stmt = $conn->prepare("UPDATE jogador SET id_equipe = ? WHERE id_jogador = ?");
-        $stmt->execute([$jogador_info['id_equipe'], $id_candidato]);
+        $stmt->execute([$id_equipe_atual, $id_candidato]);
         $stmt = $conn->prepare("DELETE FROM solicitacao_equipe WHERE id_jogador = ?");
         $stmt->execute([$id_candidato]);
+        
+        atualizarPontuacaoEquipe($conn, $id_equipe_atual);
         echo "<script>window.location.href='equipes.php';</script>";
         exit;
     }
@@ -148,7 +192,7 @@ if ($eh_lider) {
 
 // --- QUERY DE EQUIPES ---
 $query_equipes = "
-    SELECT e.id_equipe, e.nome_equipe, COUNT(j.id_jogador) AS total_membros,
+    SELECT e.id_equipe, e.nome_equipe, COALESCE(e.pontuacao_equipe, 0) AS pontuacao_equipe, COUNT(j.id_jogador) AS total_membros,
            GROUP_CONCAT(
                CONCAT(
                    j.id_jogador, ':::', j.nickname_jogador, ' [Patente: ', COALESCE(p.nome_patente, 'Sem Patente'), ' | Função: ', COALESCE(f.nome_funcao, 'Não informada'), ']'
@@ -158,14 +202,13 @@ $query_equipes = "
     LEFT JOIN jogador j ON e.id_equipe = j.id_equipe
     LEFT JOIN patente p ON j.id_patente = p.id_patente
     LEFT JOIN funcao f ON j.id_funcao = f.id_funcao
-    GROUP BY e.id_equipe, e.nome_equipe
-    ORDER BY total_membros DESC, e.nome_equipe ASC
+    GROUP BY e.id_equipe, e.nome_equipe, e.pontuacao_equipe
+    ORDER BY pontuacao_equipe DESC, total_membros DESC, e.nome_equipe ASC
 ";
 $todas_equipes = $conn->query($query_equipes)->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <style>
-    /* MODIFICAÇÃO: Garante que os textos e links dentro do cabeçalho fiquem brancos */
     header, header a, header span, header li, header div {
         color: #ffffff !important;
     }
@@ -200,7 +243,7 @@ $todas_equipes = $conn->query($query_equipes)->fetchAll(PDO::FETCH_ASSOC);
     .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
     .team-card { background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
     .team-card:hover { transform: translateY(-2px); border-color: #2563eb; }
-    .team-name { font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0; }
+    .team-name { font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 4px 0; }
     
     .mural-box { max-height: 300px; overflow-y: auto; background: #f1f5f9; padding: 14px; border-radius: 8px; margin-bottom: 12px; display: flex; flex-direction: column-reverse; gap: 8px; }
     .msg-chat { background: #fff; padding: 10px 12px; border-radius: 8px; border-left: 4px solid #2563eb; font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
@@ -264,7 +307,9 @@ $todas_equipes = $conn->query($query_equipes)->fetchAll(PDO::FETCH_ASSOC);
                     <div class="team-card" onclick="abrirMembros('<?php echo htmlspecialchars($equipe['nome_equipe']); ?>', '<?php echo htmlspecialchars($equipe['lista_membros'] ?? ''); ?>', '<?php echo $equipe['id_equipe']; ?>')">
                         <div>
                             <h4 class="team-name"><?php echo htmlspecialchars($equipe['nome_equipe']); ?></h4>
-                            <span style="font-size:13px; color:#64748b;">👥 <?php echo $equipe['total_membros']; ?> membros</span>
+                            <div style="font-size:13px; color:#64748b; margin-bottom: 5px;">👥 <?php echo $equipe['total_membros']; ?> membros</div>
+                            <!-- CORREÇÃO: Mudado de Puntos para Pontos -->
+                            <div style="font-size:13px; color:#2563eb; font-weight: bold;">⭐ Pontos: <?php echo $equipe['pontuacao_equipe']; ?></div>
                         </div>
                         <?php if ($usuario_logado && empty($jogador_info['id_equipe']) && !$solicitacao_pendente): ?>
                             <form method="POST" action="equipes.php" onclick="event.stopPropagation();" style="margin:0;">
