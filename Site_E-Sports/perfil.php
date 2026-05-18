@@ -103,7 +103,7 @@ function renderizarArquivoBlob($binario, $isPost = false) {
 
         /* DESTAQUE NOS ÍCONES */
         .badge-wrapper {
-            background-color: #dbeafe; /* Azul bem leve */
+            background-color: #dbeafe;
             border-radius: 50%;
             width: 55px;
             height: 55px;
@@ -133,6 +133,22 @@ function renderizarArquivoBlob($binario, $isPost = false) {
         
         .btn-action { background: #2563eb; color: #ffffff; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         .btn-action:hover { background: #1d4ed8; }
+
+        /* Estilização do Botão Enviar Estatísticas com a paleta do Perfil (Azul e Branco) */
+        .btn-criar-postagem {
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+        .btn-criar-postagem:hover { background: #1d4ed8; }
+        .btn-criar-postagem:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -177,23 +193,25 @@ function renderizarArquivoBlob($binario, $isPost = false) {
                 <span>PONTUAÇÃO GLOBAL</span>
             </div>
             <div class="stat">
-                <strong>#<?php echo htmlspecialchars($jogador['codigo_battlenet']); ?></strong>
+                <strong><?php echo htmlspecialchars($jogador['codigo_battlenet']); ?></strong>
                 <span>BATTLE.NET ID</span>
             </div>
         </div>
 
         <?php if($ehDono): ?>
-        <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #f1f5f9;">
-            <form method="POST" enctype="multipart/form-data">
+        <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #f1f5f9; display: flex; gap: 15px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap;">
+            <form method="POST" enctype="multipart/form-data" style="flex: 1; min-width: 250px;">
                 <p style="font-weight: bold; margin-bottom: 10px; font-size: 14px;">Atualizar Foto ou Mídia de Perfil</p>
-                <input type="file" name="foto" style="margin-bottom: 15px; font-size: 14px;">
+                <input type="file" name="foto" style="margin-bottom: 15px; font-size: 14px; display: block;">
                 <button type="submit" class="btn-action">ATUALIZAR AGORA</button>
             </form>
+            
+            <div> 
+                <button class="btn-criar-postagem" onclick="abrirModalEstatisticas()">
+                    Enviar Estatísticas
+                </button>
+            </div>
         </div>
-        <div> <button class="btn-criar-postagem" onclick="window.open('pontuacao.php', '_blank', 'width=600,height=500')">
-            Enviar Estatisticas
-        </button>
-    </div>
         <?php endif; ?>
     </div>
 
@@ -213,6 +231,35 @@ function renderizarArquivoBlob($binario, $isPost = false) {
         <?php endif; ?>
     </div>
 </div>
+
+<div id="modalEstatisticas" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.75); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: #ffffff; width: 100%; max-width: 700px; height: 85vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid #e2e8f0;">
+        
+        <div style="padding: 18px 24px; background: #2563eb; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #ffffff; font-weight: 700; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 16px;">Calculadora de Estatísticas - FragForge</span>
+            <button onclick="fecharModalEstatisticas()" style="background: none; border: none; color: #dbeafe; font-size: 30px; cursor: pointer; line-height: 1; padding: 0; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#dbeafe'">&times;</button>
+        </div>
+
+        <iframe src="pontuacao.php" style="width: 100%; flex: 1; border: none; background: #121212;"></iframe>
+    </div>
+</div>
+
+<script>
+function abrirModalEstatisticas() {
+    document.getElementById('modalEstatisticas').style.display = 'flex';
+}
+
+function fecharModalEstatisticas() {
+    document.getElementById('modalEstatisticas').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('modalEstatisticas');
+    if (event.target == modal) {
+        fecharModalEstatisticas();
+    }
+}
+</script>
 
 </body>
 </html>
