@@ -199,3 +199,34 @@ footer {
     main.not { flex-direction: column !important; align-items: center !important; }
     .news-sidebar { width: 100% !important; }
 }
+/* --- FORÇANDO A CENTRALIZAÇÃO E BANNER COMPLETO --- */
+main.not .news-sidebar .card-link {
+    display: block !important;
+    width: 100% !important;
+    text-decoration: none !important;
+}
+
+main.not .news-sidebar .card {
+    display: block !important; /* Mudado para block para ignorar flexbox antigo */
+    width: 100% !important;
+    background: #ffffff !important;
+    border-radius: 16px !important;
+    overflow: hidden !important; /* Força o corte nas bordas arredondadas */
+    padding: 0 !important;       /* Remove qualquer padding interno que estava empurrando a imagem */
+}
+
+/* O "X" da questão: Forçar a imagem a ignorar margens antigas e esticar */
+main.not .news-sidebar .card img {
+    display: block !important;
+    width: 100% !important;       /* Obriga a cobrir de ponta a ponta horizontalmente */
+    height: 180px !important;     /* Define a altura fixa do banner */
+    max-width: 100% !important;
+    margin: 0 !important;         /* Zera margens que podiam estar centralizando de forma errada */
+    object-fit: cover !important; /* Corta os lados sem amassar o texto da imagem */
+    padding: 0 !important;
+}
+
+main.not .news-sidebar .card-content {
+    padding: 16px !important;
+    text-align: center !important;
+}
