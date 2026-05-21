@@ -1,11 +1,5 @@
 <?php
-include __DIR__.'/includes/head.php';
-include __DIR__.'/includes/header.php';
-
-// Captura os filtros da URL (via GET) com valores padrão
-$ordenar = $_GET['ordenar'] ?? 'recente';
-$funcao  = $_GET['funcao'] ?? 'todas';
-
+// Inicia a sessão no topo absoluto para evitar problemas com redirecionamento e AJAX
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -21,6 +15,55 @@ try {
     echo "<div style='text-align:center; padding:20px; color:red;'>⚠️ Erro ao conectar ao banco de dados.</div>";
     exit;
 }
+
+// --- LÓGICA DE CURTIDAS INTERATIVAS (AJAX) ---
+if (isset($_GET['acao']) && $_GET['acao'] === 'curtir' && isset($_GET['id_post'])) {
+    header('Content-Type: application/json');
+    
+    if (!$usuario_logado) {
+        echo json_encode(['sucesso' => false, 'erro' => 'login_obrigatorio']);
+        exit;
+    }
+
+    $id_post_curtir = (int)$_GET['id_post'];
+
+    if (!isset($_SESSION['curtidas_usuario'])) {
+        $_SESSION['curtidas_usuario'] = [];
+    }
+
+    // Se já curtiu nesta sessão, diminui a curtida (Descurtir). Caso contrário, aumenta (+1).
+    if (isset($_SESSION['curtidas_usuario'][$id_post_curtir])) {
+        $stmt = $instancia->prepare("UPDATE post SET curtidas = GREATEST(0, curtidas - 1) WHERE id_post = ?");
+        $stmt->execute([$id_post_curtir]);
+        unset($_SESSION['curtidas_usuario'][$id_post_curtir]);
+        $status = 'descurtido';
+    } else {
+        $stmt = $instancia->prepare("UPDATE post SET curtidas = COALESCE(curtidas, 0) + 1 WHERE id_post = ?");
+        $stmt->execute([$id_post_curtir]);
+        $_SESSION['curtidas_usuario'][$id_post_curtir] = true;
+        $status = 'curtido';
+    }
+
+    // Busca a quantidade atualizada direto do banco
+    $stmt = $instancia->prepare("SELECT curtidas FROM post WHERE id_post = ?");
+    $stmt->execute([$id_post_curtir]);
+    $nova_quantidade = $stmt->fetchColumn();
+
+    echo json_encode([
+        'sucesso' => true,
+        'status' => $status,
+        'curtidas' => (int)$nova_quantidade
+    ]);
+    exit;
+}
+
+// Carrega os layouts estruturais da página após verificar requisições AJAX
+include __DIR__.'/includes/head.php';
+include __DIR__.'/includes/header.php';
+
+// Captura os filtros da URL (via GET) com valores padrão
+$ordenar = $_GET['ordenar'] ?? 'recente';
+$funcao  = $_GET['funcao'] ?? 'todas';
 
 // --- LOGICA DE SUBMISSÃO DA NOVA POSTAGEM (DENTRO DO MODAL) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $usuario_logado) {
@@ -39,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
     }
 
     if (!empty($mensagem)) {
-        $stmt = $instancia->prepare("INSERT INTO post (mensagem, print_estatistica, jogada, id_jogador) VALUES (?, ?, ?, ?)");
+        $stmt = $instancia->prepare("INSERT INTO post (mensagem, print_estatistica, jogada, id_jogador, curtidas) VALUES (?, ?, ?, ?, 0)");
         $stmt->execute([$mensagem, $print_estatistica, $jogada, $id_jogador]);
         
         // Recarrega a página atual para exibir o novo post limpo
@@ -106,14 +149,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
 
     .btn-submit-post { background: #2563eb; color: #ffffff; border: none; width: 100%; padding: 12px; font-weight: 700; font-size: 14px; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin-top: 20px; transition: background 0.2s; }
     .btn-submit-post:hover { background: #1d4ed8; }
+
+    /* Estilos do Botão Interativo de Curtida */
+    .btn-like {
+        background: #334155;
+        border: none;
+        color: #f1f5f9;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 20px;
+        transition: all 0.2s ease;
+        margin-top: 12px;
+    }
+    .btn-like:hover {
+        background: #475569;
+        transform: translateY(-1px);
+    }
+    .btn-like.active {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
 </style>
 
 <main class="not">
     <aside class="news-sidebar">
-        
-        <a href="javascript:void(0);" onclick="abrirChat()" class="chat-btn" title="Abrir Chat">
-        💬
-        </a>
+        <a href="javascript:void(0);" onclick="abrirChat()" class="chat-btn" title="Abrir Chat">💬</a>
 
         <script>
         function abrirChat() {
@@ -163,10 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
     </aside>
 
     <section class="timeline">
-        
         <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 15px 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
             <form method="GET" action="" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                
                 <div style="flex: 1; min-width: 160px;">
                     <label style="display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Focar/Ordenar por:</label>
                     <select name="ordenar" onchange="this.form.submit()" style="width:100%; padding:8px 12px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; color:#1e293b; font-weight:600; font-size:14px; outline:none;">
@@ -222,8 +286,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                         break;
                 }
 
+                // Inserido p.curtidas no SELECT de busca do feed
                 $query_string = "
-                    SELECT p.id_post, p.mensagem, j.nickname_jogador, j.id_jogador, j.foto_jogador, 
+                    SELECT p.id_post, p.mensagem, p.curtidas, j.nickname_jogador, j.id_jogador, j.foto_jogador, 
                            p.print_estatistica, p.jogada, f.icon_funcao, pa.icon_patente
                     FROM post p
                     JOIN jogador j ON p.id_jogador = j.id_jogador
@@ -239,6 +304,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
 
                 if (count($resultados) > 0) {
                     foreach ($resultados as $row) {
+                        $id_post_atual = $row['id_post'];
+                        $qtd_curtidas = (int)($row['curtidas'] ?? 0);
+                        
+                        // Verifica se este post foi marcado como curtido nesta sessão
+                        $usuario_ja_curtiu = isset($_SESSION['curtidas_usuario'][$id_post_atual]);
+                        $classe_ativa = $usuario_ja_curtiu ? 'active' : '';
+                        $emoji_coracao = $usuario_ja_curtiu ? '❤️' : '🤍';
+
                         echo "<div class='post' style='background: #1e293b; border-radius: 12px; padding: 20px; color: white; margin-bottom: 20px;'>";
                             echo "<div class='post-header' style='display:flex; align-items:center; gap:12px; margin-bottom:12px;'>";
                                 
@@ -267,6 +340,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                                     echo "</video>";
                                 echo "</div>";
                             }
+
+                            // --- ÁREA DO BOTÃO INTERATIVO DE CURTIDAS ---
+                            echo "<div class='post-footer'>";
+                                echo "<button class='btn-like {$classe_ativa}' onclick='alternarCurtida({$id_post_atual})' id='btn-like-{$id_post_atual}'>";
+                                    echo "<span id='emoji-like-{$id_post_atual}'>{$emoji_coracao}</span>";
+                                    echo "<span id='contagem-like-{$id_post_atual}'>{$qtd_curtidas}</span> Curtidas";
+                                echo "</button>";
+                            echo "</div>";
+
                         echo "</div>";
                     }
                 } else {
@@ -282,7 +364,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
 
 <div id="modalNovaPostagem" class="modal-post" onclick="fecharModalPost()">
     <div class="modal-content modal-post-content" onclick="event.stopPropagation();">
-        
         <div class="modal-post-header">
             <h3 class="modal-post-title">Nova Postagem</h3>
             <button class="btn-close-modal" onclick="fecharModalPost()">&times;</button>
@@ -290,7 +371,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
 
         <?php if ($usuario_logado): ?>
             <form method="POST" action="index.php" enctype="multipart/form-data">
-                
                 <textarea name="mensagem" class="textarea-post" placeholder="No que você está pensando hoje? Compartilhe conquistas ou jogadas..." required></textarea>
                 
                 <div class="file-input-group">
@@ -310,20 +390,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                 🔒 <br><p style="margin-top:10px;">Você precisa fazer <a href="form-login.php" style="color:#2563eb; font-weight:bold; text-decoration:underline;">Login</a> para poder criar uma postagem.</p>
             </div>
         <?php endif; ?>
-
     </div>
 </div>
 
 <script>
+// Controle assíncrono das curtidas via AJAX Fetch API
+function alternarCurtida(idPost) {
+    fetch(`index.php?acao=curtir&id_post=${idPost}`)
+        .then(response => response.json())
+        .then(dados => {
+            if (dados.sucesso) {
+                const botao = document.getElementById(`btn-like-${idPost}`);
+                const emoji = document.getElementById(`emoji-like-${idPost}`);
+                const textoContagem = document.getElementById(`contagem-like-${idPost}`);
+
+                // Atualiza o contador na tela com o novo valor retornado pelo PHP
+                textoContagem.innerText = dados.curtidas;
+
+                // Modifica o estilo visual conforme o estado retornado
+                if (dados.status === 'curtido') {
+                    botao.classList.add('active');
+                    emoji.innerText = '❤️';
+                } else {
+                    botao.classList.remove('active');
+                    emoji.innerText = '🤍';
+                }
+            } else if (dados.erro === 'login_obrigatorio') {
+                alert('🔒 Você precisa fazer login para poder curtir as publicações!');
+                window.location.href = 'form-login.php';
+            }
+        })
+        .catch(erro => console.error('Erro na requisição da curtida:', erro));
+}
+
 // Funções JavaScript de controle da janela modal
 function abrirModalPost() {
     document.getElementById('modalNovaPostagem').style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Evita o scroll de fundo
+    document.body.style.overflow = 'hidden';
 }
 
 function fecharModalPost() {
     document.getElementById('modalNovaPostagem').style.display = 'none';
-    document.body.style.overflow = 'auto'; // Habilita o scroll novamente
+    document.body.style.overflow = 'auto';
 }
 </script>
 

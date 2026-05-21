@@ -48,7 +48,7 @@ $jogador = $stmt->get_result()->fetch_assoc();
 
 if (!$jogador) { die("Jogador não encontrado."); }
 
-// 5. BUSCA POSTS
+// 5. BUSCA POSTS DO JOGADOR
 $query_posts = $conn->prepare("SELECT * FROM post WHERE id_jogador = ? ORDER BY id_post DESC");
 $query_posts->bind_param("i", $id);
 $query_posts->execute();
@@ -101,7 +101,7 @@ function renderizarArquivoBlob($binario, $isPost = false) {
         
         .nickname { font-size: 36px; font-weight: 800; margin: 0; color: #0f172a; display: flex; align-items: center; gap: 15px; }
 
-        /* DESTAQUE NOS ÍCONES */
+        /* Ícones de Patente e Função */
         .badge-wrapper {
             background-color: #dbeafe;
             border-radius: 50%;
@@ -124,17 +124,20 @@ function renderizarArquivoBlob($binario, $isPost = false) {
         .stat strong { display: block; font-size: 26px; color: #2563eb; margin-bottom: 4px; }
         .stat span { font-size: 12px; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
 
-        /* Timeline */
-        .posts-section { margin-top: 50px; }
+        /* Timeline de Posts */
+        .posts-section { margin-top: 40px; }
         .section-title { font-size: 22px; color: #0f172a; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
         .section-title::before { content: ""; width: 6px; height: 24px; background: #2563eb; border-radius: 10px; }
         .post-card { background: #ffffff; padding: 25px; border-radius: 20px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
-        .post-media { max-width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid #f1f5f9; }
+        .post-media { max-width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid #f1f5f9; margin-top: 15px; }
         
+        /* Footer do card para alinhar as curtidas */
+        .post-footer { margin-top: 18px; padding-top: 12px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 14px; font-weight: 600; }
+
         .btn-action { background: #2563eb; color: #ffffff; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         .btn-action:hover { background: #1d4ed8; }
 
-        /* Estilização do Botão Enviar Estatísticas com a paleta do Perfil (Azul e Branco) */
+        /* Botão Enviar Estatísticas */
         .btn-criar-postagem {
             background: #2563eb;
             color: #ffffff;
@@ -167,22 +170,22 @@ function renderizarArquivoBlob($binario, $isPost = false) {
                     <?php echo htmlspecialchars($jogador['nickname_jogador']); ?>
                     
                     <?php if(!empty($jogador['icon_patente'])): ?>
-                        <div class="badge-wrapper" title="Patente: <?php echo $jogador['nome_patente']; ?>">
-                            <img src="<?php echo $jogador['icon_patente']; ?>" class="badge-icon">
+                        <div class="badge-wrapper" title="Patente: <?php echo htmlspecialchars($jogador['nome_patente']); ?>">
+                            <img src="<?php echo htmlspecialchars($jogador['icon_patente']); ?>" class="badge-icon">
                         </div>
                     <?php endif; ?>
 
                     <?php if(!empty($jogador['icon_funcao'])): ?>
-                        <div class="badge-wrapper" title="Função: <?php echo $jogador['nome_funcao']; ?>">
-                            <img src="<?php echo $jogador['icon_funcao']; ?>" class="badge-icon">
+                        <div class="badge-wrapper" title="Função: <?php echo htmlspecialchars($jogador['nome_funcao']); ?>">
+                            <img src="<?php echo htmlspecialchars($jogador['icon_funcao']); ?>" class="badge-icon">
                         </div>
                     <?php endif; ?>
                 </h1>
                 
                 <div class="sub-info">
-                    <span class="equipe-nome"><?php echo $jogador['nome_equipe'] ?? 'SEM EQUIPE'; ?></span> 
-                    • <?php echo $jogador['nome_funcao'] ?? 'S/ Função'; ?> 
-                    • <?php echo $jogador['nome_patente'] ?? 'S/ Patente'; ?>
+                    <span class="equipe-nome"><?php echo htmlspecialchars($jogador['nome_equipe'] ?? 'SEM EQUIPE'); ?></span> 
+                    • <?php echo htmlspecialchars($jogador['nome_funcao'] ?? 'S/ Função'); ?> 
+                    • <?php echo htmlspecialchars($jogador['nome_patente'] ?? 'S/ Patente'); ?>
                 </div>
             </div>
         </div>
@@ -193,8 +196,12 @@ function renderizarArquivoBlob($binario, $isPost = false) {
                 <span>PONTUAÇÃO GLOBAL</span>
             </div>
             <div class="stat">
-                <strong><?php echo htmlspecialchars($jogador['codigo_battlenet']); ?></strong>
+                <strong><?php echo htmlspecialchars($jogador['codigo_battlenet'] ?? 'Não informado'); ?></strong>
                 <span>BATTLE.NET ID</span>
+            </div>
+            <div class="stat">
+                <strong><?php echo number_format($jogador['seguidor'] ?? 0, 0, '', '.'); ?></strong>
+                <span>SEGUIDORES</span>
             </div>
         </div>
 
@@ -215,23 +222,35 @@ function renderizarArquivoBlob($binario, $isPost = false) {
         <?php endif; ?>
     </div>
 
+    <!-- TIMELINE DE ATIVIDADE -->
     <div class="posts-section">
         <h2 class="section-title">Timeline de Atividade</h2>
         <?php if ($posts->num_rows > 0): ?>
             <?php while ($p = $posts->fetch_assoc()): ?>
                 <div class="post-card">
-                    <p><?php echo htmlspecialchars($p['mensagem']); ?></p>
-                    <?php if ($p['print_estatistica']): ?>
-                        <div class="post-media"><?php echo renderizarArquivoBlob($p['print_estatistica'], true); ?></div>
+                    <p style="margin-top: 0; font-size: 16px; line-height: 1.5;"><?php echo htmlspecialchars($p['mensagem']); ?></p>
+                    
+                    <?php if (!empty($p['print_estatistica'])): ?>
+                        <div class="post-media">
+                            <?php echo renderizarArquivoBlob($p['print_estatistica'], true); ?>
+                        </div>
                     <?php endif; ?>
+
+                    <!-- [ADICIONADO] EXIBIÇÃO DA QUANTIDADE DE CURTIDAS DO POST -->
+                    <div class="post-footer">
+                        <span>❤️ <?php echo number_format($p['curtidas'] ?? 0, 0, '', '.'); ?> curtidas</span>
+                    </div>
                 </div>
             <?php endwhile; ?>
         <?php else: ?>
-            <div class="post-card" style="text-align: center;"><p style="color: #94a3b8;">Sem posts recentes.</p></div>
+            <div class="post-card" style="text-align: center; padding: 40px 20px;">
+                <p style="color: #94a3b8; margin: 0;">Sem posts ou atividades recentes neste perfil.</p>
+            </div>
         <?php endif; ?>
     </div>
 </div>
 
+<!-- MODAL DA CALCULADORA -->
 <div id="modalEstatisticas" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.75); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
     <div style="background: #ffffff; width: 100%; max-width: 700px; height: 85vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid #e2e8f0;">
         
