@@ -1,37 +1,36 @@
 <?php
-include __DIR__.'/includes/head.php';
-
+include __DIR__.'/includes/formhead.php'
 ?>
-<link rel="stylesheet" href="styles/form.css">
 
-<header>
-    
-        <img class="logofrag" src="includes/imagens/logo_frag.png">
+<main class="container-cadastro">
 
-            <h2>
-                <a href="index.php" class="frag">FragForge</a>
-            </h2>
+    <h3>Login</h3>
 
-</header>
-
-<main>
-    <div>
-        <form method="POST" action="logar.php">
-            <?php
-                session_start();
-                if (isset($_SESSION['MnsErro'])) {
-                    echo '<p style="font-size: 15px;text-align: center; margin-bottom: 5px; color: rgb(245, 24, 30);font-weight:normal;">'.$_SESSION['MnsErro'].'</p>';
-                    session_abort();
-                }
-            ?>
-            <label>Email/Nickname:</label><input type="text" name="nome-email">
-            <label>Senha:</label><input type="password" name="senha">
-            <input class="submit" type="submit" value="Entrar">
-        </form>
-        <div style="display: flex; justify-content: space-between">
-            <a href="form-cadastro.php">Não possui conta?</a>
-            <a href="form-esqueciasenha.php">Esqueceu a senha?</a>
+    <?php
+        session_start();
+        if (isset($_SESSION['MnsErro'])) {
+            echo '<p style="font-size: 15px;text-align: center; margin-bottom: 5px; color: rgb(245, 24, 30);font-weight:normal;">'.$_SESSION['MnsErro'].'</p>';
+            session_abort();
+        }
+    ?>
+    <form method="POST" action="logar.php">
+        <div class="input-box">
+            <input type="text" name="nome-email" placeholder="Nome/Email" required>
         </div>
+        <div class="input-box">
+            <input type="password" name="senha" placeholder="Senha" required>
+        </div>
+        <button type="submit" class="btn-cadastro">
+            Criar Conta
+        </button>
+    </form>
+    <div class="login-link">
+        Não possui conta?
+        <a href="form-cadastro.php">Fazer Cadastro</a>
+    </div>
+    <div class="login-link">
+        Esqueceu a senha?
+        <a href="form-esqueciasenha.php">Recuperar a Senha</a>
     </div>
 </main>
 </body>

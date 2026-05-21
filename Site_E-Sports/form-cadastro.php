@@ -1,21 +1,8 @@
 <?php
 session_start();
-include __DIR__.'/includes/head.php';
+include __DIR__.'/includes/formhead.php'
 ?>
 
-<link rel="stylesheet" href="styles/cadastro.css">
-
-<body>
-
-<header>
-
-    <h2>
-        <a href="index.php" class="frag">
-            Frag<span>Forge</span>
-        </a>
-    </h2>
-
-</header>
 
 <?php
 $conn = new mysqli("localhost", "root", "root", "fragforge");
@@ -88,7 +75,6 @@ $patentes = $conn->query("SELECT * FROM patente");
                     </option>";
                 }
                 ?>
-
             </select>
         </div>
 
