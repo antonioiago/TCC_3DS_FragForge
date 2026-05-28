@@ -13,7 +13,21 @@ if (!isset($_SESSION['id_jogador'])) { $_SESSION['id_jogador'] = $id; }
 $id_logado = $_SESSION['id_jogador'];
 $ehDono = ($id === $id_logado);
 
-// 3. UPLOAD DA FOTO (MEDIUMBLOB)
+// --- PROCESSAMENTO DO FORMULÁRIO DE DADOS (RANK, FUNÇÃO, BATTLENET) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_atualizar_dados']) && $ehDono) {
+    $id_patente = !empty($_POST['id_patente']) ? intval($_POST['id_patente']) : NULL;
+    $id_funcao = !empty($_POST['id_funcao']) ? intval($_POST['id_funcao']) : NULL;
+    $battlenet = !empty($_POST['codigo_battlenet']) ? trim($_POST['codigo_battlenet']) : NULL;
+
+    $update_dados = $conn->prepare("UPDATE jogador SET id_patente = ?, id_funcao = ?, codigo_battlenet = ? WHERE id_jogador = ?");
+    $update_dados->bind_param("iisi", $id_patente, $id_funcao, $battlenet, $id_logado);
+    $update_dados->execute();
+    
+    header("Location: perfil.php?id=" . $id);
+    exit;
+}
+
+// 3. UPLOAD DA FOTO (MEDIUMBLOB) - Disparado automaticamente ao selecionar o arquivo
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto']) && $ehDono) {
     if ($_FILES['foto']['error'] === UPLOAD_ERR_OK) {
         $conteudo = file_get_contents($_FILES['foto']['tmp_name']);
@@ -47,6 +61,14 @@ $stmt->execute();
 $jogador = $stmt->get_result()->fetch_assoc();
 
 if (!$jogador) { die("Jogador não encontrado."); }
+
+// BUSCA OPÇÕES PARA OS SELECTS (Apenas se for o Dono da conta)
+$todas_patentes = [];
+$todas_funcoes = [];
+if ($ehDono) {
+    $todas_patentes = $conn->query("SELECT id_patente, nome_patente FROM patente ORDER BY id_patente ASC");
+    $todas_funcoes = $conn->query("SELECT id_funcao, nome_funcao FROM funcao ORDER BY nome_funcao ASC");
+}
 
 // 5. BUSCA POSTS DO JOGADOR
 $query_posts = $conn->prepare("SELECT * FROM post WHERE id_jogador = ? ORDER BY id_post DESC");
@@ -97,7 +119,16 @@ function renderizarArquivoBlob($binario, $isPost = false) {
         /* Card Principal */
         .card { background: #ffffff; border-radius: 24px; padding: 40px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 30px; }
         .header { display: flex; align-items: center; gap: 30px; }
-        .perfil-foto { width: 140px; height: 140px; border-radius: 50%; border: 5px solid #2563eb; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        
+        /* Estilização da Foto de Perfil Interativa */
+        .perfil-foto { width: 140px; height: 140px; border-radius: 50%; border: 5px solid #2563eb; overflow: hidden; background: #f8fafc; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); position: relative; }
+        
+        <?php if($ehDono): ?>
+        .perfil-foto-dono { cursor: pointer; transition: all 0.3s ease; }
+        .perfil-foto-dono:hover { filter: brightness(0.7); border-color: #1d4ed8; }
+        .perfil-foto-dono::after { content: "📷"; position: absolute; font-size: 24px; opacity: 0; transition: opacity 0.3s ease; }
+        .perfil-foto-dono:hover::after { opacity: 1; }
+        <?php endif; ?>
         
         .nickname { font-size: 36px; font-weight: 800; margin: 0; color: #0f172a; display: flex; align-items: center; gap: 15px; }
 
@@ -124,15 +155,13 @@ function renderizarArquivoBlob($binario, $isPost = false) {
         .stat strong { display: block; font-size: 26px; color: #2563eb; margin-bottom: 4px; }
         .stat span { font-size: 12px; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
 
-        /* Timeline de Posts */
-        .posts-section { margin-top: 40px; }
-        .section-title { font-size: 22px; color: #0f172a; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
-        .section-title::before { content: ""; width: 6px; height: 24px; background: #2563eb; border-radius: 10px; }
-        .post-card { background: #ffffff; padding: 25px; border-radius: 20px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
-        .post-media { max-width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid #f1f5f9; margin-top: 15px; }
-        
-        /* Footer do card para alinhar as curtidas */
-        .post-footer { margin-top: 18px; padding-top: 12px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 14px; font-weight: 600; }
+        /* Painel de Edição */
+        .edit-panel { background: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; border-radius: 18px; margin-top: 30px; }
+        .edit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; }
+        .form-control { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; background: #fff; }
+        .form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
         .btn-action { background: #2563eb; color: #ffffff; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         .btn-action:hover { background: #1d4ed8; }
@@ -147,11 +176,18 @@ function renderizarArquivoBlob($binario, $isPost = false) {
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
-            margin-top: 15px;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
         .btn-criar-postagem:hover { background: #1d4ed8; }
         .btn-criar-postagem:active { transform: scale(0.98); }
+
+        /* Timeline de Posts */
+        .posts-section { margin-top: 40px; }
+        .section-title { font-size: 22px; color: #0f172a; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+        .section-title::before { content: ""; width: 6px; height: 24px; background: #2563eb; border-radius: 10px; }
+        .post-card { background: #ffffff; padding: 25px; border-radius: 20px; margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .post-media { max-width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid #f1f5f9; margin-top: 15px; }
+        .post-footer { margin-top: 18px; padding-top: 12px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 14px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -161,7 +197,13 @@ function renderizarArquivoBlob($binario, $isPost = false) {
 
     <div class="card">
         <div class="header">
-            <div class="perfil-foto">
+            <?php if($ehDono): ?>
+            <form id="formFotoPerfil" method="POST" enctype="multipart/form-data" style="display: none;">
+                <input type="file" name="foto" id="inputFotoPerfil" accept="image/*" onchange="enviarFormFoto()">
+            </form>
+            <?php endif; ?>
+
+            <div class="perfil-foto <?php echo $ehDono ? 'perfil-foto-dono' : ''; ?>" <?php echo $ehDono ? 'onclick="dispararUpload()"' : ''; ?> title="<?php echo $ehDono ? 'Clique para mudar a foto de perfil' : ''; ?>">
                 <?php echo renderizarArquivoBlob($jogador['foto_jogador']); ?>
             </div>
             
@@ -199,27 +241,51 @@ function renderizarArquivoBlob($binario, $isPost = false) {
                 <strong><?php echo htmlspecialchars($jogador['codigo_battlenet'] ?? 'Não informado'); ?></strong>
                 <span>BATTLE.NET ID</span>
             </div>
-            
         </div>
 
         <?php if($ehDono): ?>
-        <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #f1f5f9; display: flex; gap: 15px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap;">
-            <form method="POST" enctype="multipart/form-data" style="flex: 1; min-width: 250px;">
-                <p style="font-weight: bold; margin-bottom: 10px; font-size: 14px;">Atualizar Foto ou Mídia de Perfil</p>
-                <input type="file" name="foto" style="margin-bottom: 15px; font-size: 14px; display: block;">
-                <button type="submit" class="btn-action">ATUALIZAR AGORA</button>
+        <div class="edit-panel">
+            <p style="font-weight: bold; margin-top: 0; margin-bottom: 15px; font-size: 15px; color: #0f172a; display:flex; align-items:center; gap:6px;">⚙️ Gerenciar Dados do Perfil</p>
+            <form method="POST" action="perfil.php?id=<?php echo $id; ?>">
+                <div class="edit-grid">
+                    <div class="form-group">
+                        <label for="id_patente">Patente / Rank</label>
+                        <select name="id_patente" id="id_patente" class="form-control">
+                            <option value="">Selecione sua Patente</option>
+                            <?php while($patente = $todas_patentes->fetch_assoc()){ ?>
+                                <option value="<?php echo $patente['id_patente']; ?>" <?php echo ($jogador['id_patente'] == $patente['id_patente']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($patente['nome_patente']); ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_funcao">Função In-Game</label>
+                        <select name="id_funcao" id="id_funcao" class="form-control">
+                            <option value="">Selecione sua Função</option>
+                            <?php while($funcao = $todas_funcoes->fetch_assoc()){ ?>
+                                <option value="<?php echo $funcao['id_funcao']; ?>" <?php echo ($jogador['id_funcao'] == $funcao['id_funcao']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($funcao['nome_funcao']); ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="codigo_battlenet">Battle.net ID</label>
+                        <input type="text" name="codigo_battlenet" id="codigo_battlenet" class="form-control" placeholder="Ex: Player#1234" value="<?php echo htmlspecialchars($jogador['codigo_battlenet'] ?? ''); ?>">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center; justify-content: space-between; margin-top: 20px;">
+                    <button type="submit" name="acao_atualizar_dados" class="btn-action" style="flex: 1; padding: 12px;">Salvar Alterações do Perfil</button>
+                    <button type="button" class="btn-criar-postagem" onclick="abrirModalEstatisticas()" style="padding: 12px 25px;">Enviar Estatísticas</button>
+                </div>
             </form>
-            
-            <div> 
-                <button class="btn-criar-postagem" onclick="abrirModalEstatisticas()">
-                    Enviar Estatísticas
-                </button>
-            </div>
         </div>
         <?php endif; ?>
     </div>
 
-    <!-- TIMELINE DE ATIVIDADE -->
     <div class="posts-section">
         <h2 class="section-title">Timeline de Atividade</h2>
         <?php if ($posts->num_rows > 0): ?>
@@ -233,7 +299,6 @@ function renderizarArquivoBlob($binario, $isPost = false) {
                         </div>
                     <?php endif; ?>
 
-                    <!-- [ADICIONADO] EXIBIÇÃO DA QUANTIDADE DE CURTIDAS DO POST -->
                     <div class="post-footer">
                         <span>❤️ <?php echo number_format($p['curtidas'] ?? 0, 0, '', '.'); ?> curtidas</span>
                     </div>
@@ -247,7 +312,6 @@ function renderizarArquivoBlob($binario, $isPost = false) {
     </div>
 </div>
 
-<!-- MODAL DA CALCULADORA -->
 <div id="modalEstatisticas" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.75); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
     <div style="background: #ffffff; width: 100%; max-width: 700px; height: 85vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid #e2e8f0;">
         
@@ -261,6 +325,19 @@ function renderizarArquivoBlob($binario, $isPost = false) {
 </div>
 
 <script>
+// Funções para controle do clique na foto de perfil
+function dispararUpload() {
+    document.getElementById('inputFotoPerfil').click();
+}
+
+function enviarFormFoto() {
+    const input = document.getElementById('inputFotoPerfil');
+    if(input.files && input.files.length > 0) {
+        document.getElementById('formFotoPerfil').submit();
+    }
+}
+
+// Funções da calculadora
 function abrirModalEstatisticas() {
     document.getElementById('modalEstatisticas').style.display = 'flex';
 }
