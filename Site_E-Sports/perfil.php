@@ -199,10 +199,7 @@ function renderizarArquivoBlob($binario, $isPost = false) {
                 <strong><?php echo htmlspecialchars($jogador['codigo_battlenet'] ?? 'Não informado'); ?></strong>
                 <span>BATTLE.NET ID</span>
             </div>
-            <div class="stat">
-                <strong><?php echo number_format($jogador['seguidor'] ?? 0, 0, '', '.'); ?></strong>
-                <span>SEGUIDORES</span>
-            </div>
+            
         </div>
 
         <?php if($ehDono): ?>

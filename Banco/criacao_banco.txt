@@ -46,8 +46,11 @@ create table post
     comentario varchar(255),
     print_estatistica mediumblob,
     jogada longblob,
-	id_jogador int not null,
-	foreign key (id_jogador) references jogador(id_jogador)
+    curtidas int,
+    id_equipe int,
+	id_jogador int,
+	foreign key (id_jogador) references jogador(id_jogador),
+    foreign key (id_equipe) references equipe (id_equipe)
 );
 
 create table adm
