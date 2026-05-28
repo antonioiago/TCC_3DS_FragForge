@@ -57,6 +57,21 @@ if (isset($_GET['acao']) && $_GET['acao'] === 'curtir' && isset($_GET['id_post']
     exit;
 }
 
+// --- LÓGICA DE SUBMISSÃO DE COMENTÁRIOS ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_comentar']) && $usuario_logado) {
+    $id_post_comentario = (int)$_POST['id_post_comentario'];
+    $texto_comentario = trim($_POST['texto_comentario']);
+
+    if (!empty($texto_comentario)) {
+        $stmt_comentario = $instancia->prepare("INSERT INTO comentario (id_post, id_jogador, texto) VALUES (?, ?, ?)");
+        $stmt_comentario->execute([$id_post_comentario, $id_jogador, $texto_comentario]);
+        
+        // Recarrega a página para exibir o comentário inserido
+        echo "<script>window.location.href='index.php';</script>";
+        exit;
+    }
+}
+
 // Carrega os layouts estruturais da página após verificar requisições AJAX
 include __DIR__.'/includes/head.php';
 include __DIR__.'/includes/header.php';
@@ -150,8 +165,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
     .btn-submit-post { background: #2563eb; color: #ffffff; border: none; width: 100%; padding: 12px; font-weight: 700; font-size: 14px; border-radius: 8px; cursor: pointer; text-transform: uppercase; margin-top: 20px; transition: background 0.2s; }
     .btn-submit-post:hover { background: #1d4ed8; }
 
-    /* Estilos do Botão Interativo de Curtida */
-    .btn-like {
+    /* Estilos do Botão Interativo de Curtida e Comentário */
+    .post-footer {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+    }
+    .btn-like, .btn-comment-toggle {
         background: #334155;
         border: none;
         color: #f1f5f9;
@@ -164,9 +184,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
         padding: 6px 14px;
         border-radius: 20px;
         transition: all 0.2s ease;
-        margin-top: 12px;
     }
-    .btn-like:hover {
+    .btn-like:hover, .btn-comment-toggle:hover {
         background: #475569;
         transform: translateY(-1px);
     }
@@ -174,6 +193,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
         background: rgba(239, 68, 68, 0.15);
         color: #ef4444;
         border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* --- ESTILOS DO PAINEL DE COMENTÁRIOS --- */
+    .box-comentarios {
+        background: #151f32;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+        border: 1px solid #334155;
+    }
+    .lista-comentarios {
+        max-height: 250px;
+        overflow-y: auto;
+        margin-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .item-comentario {
+        background: #1e293b;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border-left: 3px solid #2563eb;
+        font-size: 14px;
+    }
+    .item-comentario strong {
+        color: #60a5fa;
+    }
+    .form-comentario {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    .input-comentario {
+        flex: 1;
+        background: #1e293b;
+        border: 1px solid #475569;
+        border-radius: 6px;
+        padding: 8px 12px;
+        color: white;
+        font-size: 14px;
+        outline: none;
+    }
+    .input-comentario:focus {
+        border-color: #2563eb;
+    }
+    .btn-enviar-comentario {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .btn-enviar-comentario:hover {
+        background: #1d4ed8;
     }
 </style>
 
@@ -286,7 +363,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                         break;
                 }
 
-                // Inserido p.curtidas no SELECT de busca do feed
                 $query_string = "
                     SELECT p.id_post, p.mensagem, p.curtidas, j.nickname_jogador, j.id_jogador, j.foto_jogador, 
                            p.print_estatistica, p.jogada, f.icon_funcao, pa.icon_patente
@@ -311,6 +387,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                         $usuario_ja_curtiu = isset($_SESSION['curtidas_usuario'][$id_post_atual]);
                         $classe_ativa = $usuario_ja_curtiu ? 'active' : '';
                         $emoji_coracao = $usuario_ja_curtiu ? '❤️' : '🤍';
+
+                        // Conta quantos comentários esse post específico possui
+                        $stmt_qtd_c = $instancia->prepare("SELECT COUNT(*) FROM comentario WHERE id_post = ?");
+                        $stmt_qtd_c->execute([$id_post_atual]);
+                        $qtd_comentarios = $stmt_qtd_c->fetchColumn();
 
                         echo "<div class='post' style='background: #1e293b; border-radius: 12px; padding: 20px; color: white; margin-bottom: 20px;'>";
                             echo "<div class='post-header' style='display:flex; align-items:center; gap:12px; margin-bottom:12px;'>";
@@ -341,12 +422,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                                 echo "</div>";
                             }
 
-                            // --- ÁREA DO BOTÃO INTERATIVO DE CURTIDAS ---
+                            // --- ÁREA DOS BOTÕES DE INTERAÇÃO ---
                             echo "<div class='post-footer'>";
                                 echo "<button class='btn-like {$classe_ativa}' onclick='alternarCurtida({$id_post_atual})' id='btn-like-{$id_post_atual}'>";
                                     echo "<span id='emoji-like-{$id_post_atual}'>{$emoji_coracao}</span>";
                                     echo "<span id='contagem-like-{$id_post_atual}'>{$qtd_curtidas}</span> Curtidas";
                                 echo "</button>";
+
+                                // NOVO BOTÃO DE COMENTÁRIOS
+                                echo "<button class='btn-comment-toggle' onclick='toggleComentarios({$id_post_atual})'>";
+                                    echo "💬 <span>{$qtd_comentarios}</span> Comentários";
+                                echo "</button>";
+                            echo "</div>";
+
+                            // --- SEÇÃO EXPANSÍVEL DE COMENTÁRIOS ---
+                            echo "<div id='box-comentarios-{$id_post_atual}' class='box-comentarios' style='display: none;'>";
+                                echo "<div class='lista-comentarios'>";
+                                
+                                // Busca os comentários desse post associando com o nickname do jogador
+                                $stmt_c = $instancia->prepare("
+                                    SELECT c.texto, j.nickname_jogador 
+                                    FROM comentario c 
+                                    JOIN jogador j ON c.id_jogador = j.id_jogador 
+                                    WHERE c.id_post = ? 
+                                    ORDER BY c.id_comentario ASC
+                                ");
+                                $stmt_c->execute([$id_post_atual]);
+                                $comentarios = $stmt_c->fetchAll(PDO::FETCH_ASSOC);
+
+                                if (count($comentarios) > 0) {
+                                    foreach ($comentarios as $com) {
+                                        echo "<div class='item-comentario'>";
+                                            echo "<strong>@" . htmlspecialchars($com['nickname_jogador']) . ":</strong> ";
+                                            echo htmlspecialchars($com['texto']);
+                                        echo "</div>";
+                                    }
+                                } else {
+                                    echo "<p style='color: #64748b; font-size: 13px; margin: 5px 0;' id='sem-comentarios-{$id_post_atual}'>Nenhum comentário ainda. Seja o primeiro!</p>";
+                                }
+                                echo "</div>";
+
+                                // Formuário para adicionar comentário (Apenas se logado)
+                                if ($usuario_logado) {
+                                    echo "<form method='POST' action='index.php' class='form-comentario'>";
+                                        echo "<input type='hidden' name='id_post_comentario' value='{$id_post_atual}'>";
+                                        echo "<input type='text' name='texto_comentario' class='input-comentario' placeholder='Escreva um comentário...' required>";
+                                        echo "<button type='submit' name='acao_comentar' class='btn-enviar-comentario'>Enviar</button>";
+                                    echo "</form>";
+                                } else {
+                                    echo "<p style='color: #94a3b8; font-size: 12px; margin: 5px 0;'>🔒 Faça <a href='form-login.php' style='color:#2563eb; text-decoration:underline;'>login</a> para comentar.</p>";
+                                }
                             echo "</div>";
 
                         echo "</div>";
@@ -371,7 +496,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
 
         <?php if ($usuario_logado): ?>
             <form method="POST" action="index.php" enctype="multipart/form-data">
-                <textarea name="mensagem" class="textarea-post" placeholder="No que você está pensando hoje? Compartilhe conquistas ou jogadas..." required></textarea>
+                <textarea name="mensagem" class="textarea-post" placeholder="No que você está thinking hoje? Compartilhe conquistas ou jogadas..." required></textarea>
                 
                 <div class="file-input-group">
                     <label class="file-label">📸 Print de Estatística (Imagem):</label>
@@ -394,6 +519,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
 </div>
 
 <script>
+// Exibe ou oculta a caixa de comentários ao clicar no botão
+function toggleComentarios(idPost) {
+    const box = document.getElementById(`box-comentarios-${idPost}`);
+    if (box.style.display === "none" || box.style.display === "") {
+        box.style.display = "block";
+    } else {
+        box.style.display = "none";
+    }
+}
+
 // Controle assíncrono das curtidas via AJAX Fetch API
 function alternarCurtida(idPost) {
     fetch(`index.php?acao=curtir&id_post=${idPost}`)
