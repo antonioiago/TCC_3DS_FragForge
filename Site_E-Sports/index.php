@@ -256,13 +256,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
 
 <main class="not">
     <aside class="news-sidebar">
-        <a href="javascript:void(0);" onclick="abrirChat()" class="chat-btn" title="Abrir Chat">💬</a>
-
-        <script>
-        function abrirChat() {
-            window.open('chat.php', 'ChatFragForge', 'width=450,height=600,scrollbars=no,resizable=no');
-        }
-        </script>
+        
 
         <a href="https://overwatch.blizzard.com/en-us/news/patch-notes/" class="card-link">
             <div class="card">
