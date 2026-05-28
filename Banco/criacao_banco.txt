@@ -53,6 +53,16 @@ create table post
     foreign key (id_equipe) references equipe (id_equipe)
 );
 
+CREATE TABLE IF NOT EXISTS comentario (
+    id_comentario INT AUTO_INCREMENT PRIMARY KEY,
+    id_post INT NOT NULL,
+    id_jogador INT NOT NULL,
+    texto TEXT NOT NULL,
+    data_comentario TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_post) REFERENCES post(id_post) ON DELETE CASCADE,
+    FOREIGN KEY (id_jogador) REFERENCES jogador(id_jogador) ON DELETE CASCADE
+);
+
 create table adm
 (
 	id_adm int auto_increment primary key,
@@ -88,3 +98,6 @@ CREATE TABLE IF NOT EXISTS mural_equipe (
     FOREIGN KEY (id_equipe) REFERENCES equipe(id_equipe) ON DELETE CASCADE,
     FOREIGN KEY (id_jogador) REFERENCES jogador(id_jogador) ON DELETE CASCADE
 );
+
+
+
