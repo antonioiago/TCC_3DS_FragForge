@@ -22,6 +22,8 @@ create table equipe
     pontuacao_equipe int
 );
 
+ALTER TABLE equipe ADD COLUMN tipo_equipe VARCHAR(20) DEFAULT 'amigavel' AFTER nome_equipe;
+
 create table jogador
 (
 	id_jogador int auto_increment primary key,
