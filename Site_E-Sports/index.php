@@ -312,6 +312,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                     <label style="display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Focar/Ordenar por:</label>
                     <select name="ordenar" onchange="this.form.submit()" style="width:100%; padding:8px 12px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; color:#1e293b; font-weight:600; font-size:14px; outline:none;">
                         <option value="recente" <?php echo $ordenar === 'recente' ? 'selected' : ''; ?>>🕒 Postagens Recentes</option>
+                        <option value="mais_curtidas" <?php echo $ordenar === 'mais_curtidas' ? 'selected' : ''; ?>>❤️ Mais Curtidas</option>
                         <option value="maior_pontuacao" <?php echo $ordenar === 'maior_pontuacao' ? 'selected' : ''; ?>>🔥 Maior Pontuação</option>
                         <option value="maior_rank" <?php echo $ordenar === 'maior_rank' ? 'selected' : ''; ?>>👑 Maior Patente / Rank</option>
                     </select>
@@ -350,7 +351,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                 }
                 $whereSql = !empty($whereClauses) ? "WHERE " . implode(" AND ", $whereClauses) : "";
 
+                // --- ATUALIZAÇÃO DA LÓGICA DE ORDENAÇÃO ---
                 switch ($ordenar) {
+                    case 'mais_curtidas':
+                        $orderBySql = "ORDER BY p.curtidas DESC, p.id_post DESC";
+                        break;
                     case 'maior_pontuacao':
                         $orderBySql = "ORDER BY j.pontuacao_jogador DESC, p.id_post DESC";
                         break;
@@ -429,7 +434,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                                     echo "<span id='contagem-like-{$id_post_atual}'>{$qtd_curtidas}</span> Curtidas";
                                 echo "</button>";
 
-                                // NOVO BOTÃO DE COMENTÁRIOS
+                                // BOTÃO DE COMENTÁRIOS
                                 echo "<button class='btn-comment-toggle' onclick='toggleComentarios({$id_post_atual})'>";
                                     echo "💬 <span>{$qtd_comentarios}</span> Comentários";
                                 echo "</button>";
@@ -496,7 +501,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
 
         <?php if ($usuario_logado): ?>
             <form method="POST" action="index.php" enctype="multipart/form-data">
-                <textarea name="mensagem" class="textarea-post" placeholder="No que você está thinking hoje? Compartilhe conquistas ou jogadas..." required></textarea>
+                <textarea name="mensagem" class="textarea-post" placeholder="No que você está pensando hoje? Compartilhe conquistas ou jogadas..." required></textarea>
                 
                 <div class="file-input-group">
                     <label class="file-label">📸 Print de Estatística (Imagem):</label>
