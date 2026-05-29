@@ -1,11 +1,8 @@
 <?php
 session_start();
-include __DIR__.'/includes/formhead.php'
-?>
 
-
-<?php
-$conn = new mysqli("localhost", "root", "root", "fragforge");
+include __DIR__.'/includes/formhead.php';
+include __DIR__.'/includes/conn.php';
 
 $funcoes = $conn->query("SELECT * FROM funcao");
 $patentes = $conn->query("SELECT * FROM patente");
@@ -49,7 +46,7 @@ $patentes = $conn->query("SELECT * FROM patente");
                 <option value="">Função</option>
 
                 <?php
-                while($f = $funcoes->fetch_assoc()) {
+                while($f = $funcoes->fetch(PDO::FETCH_ASSOC)) {
 
                     echo "
                     <option value='{$f['id_funcao']}'>
@@ -67,7 +64,7 @@ $patentes = $conn->query("SELECT * FROM patente");
                 <option value="">Patente</option>
 
                 <?php
-                while($p = $patentes->fetch_assoc()) {
+                while($p = $patentes->fetch(PDO::FETCH_ASSOC)) {
 
                     echo "
                     <option value='{$p['id_patente']}'>

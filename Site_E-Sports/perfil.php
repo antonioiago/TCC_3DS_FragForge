@@ -1,47 +1,90 @@
 <?php
 session_start();
 
-// 1. CONEXÃO
-$conn = new mysqli("localhost", "root", "root", "fragforge");
-if ($conn->connect_error) { die("Erro: " . $conn->connect_error); }
+// =========================
+// 1. CONEXÃO SUPABASE (PDO)
+// =========================
+try {
+    $conn = new PDO(
+        "pgsql:host=aws-1-sa-east-1.pooler.supabase.com;port=5432;dbname=postgres;sslmode=require",
+        "postgres.oxflxsewydmzxfieejdl",
+        "3dsfr@gF0rg3"
+    );
 
-if (!isset($_GET['id'])) { die("Jogador não encontrado"); }
-$id = intval($_GET['id']);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-// 2. AUTO LOGIN
-if (!isset($_SESSION['id_jogador'])) { $_SESSION['id_jogador'] = $id; }
+} catch (Exception $e) {
+    die("Erro: " . $e->getMessage());
+}
+
+// =========================
+// 2. ID JOGADOR
+// =========================
+if (!isset($_GET['id'])) {
+    die("Jogador não encontrado");
+}
+
+$id = (int) $_GET['id'];
+
+// =========================
+// 3. AUTO LOGIN
+// =========================
+if (!isset($_SESSION['id_jogador'])) {
+    $_SESSION['id_jogador'] = $id;
+}
+
 $id_logado = $_SESSION['id_jogador'];
 $ehDono = ($id === $id_logado);
 
-// --- PROCESSAMENTO DO FORMULÁRIO DE DADOS (RANK, FUNÇÃO, BATTLENET) ---
+// =========================
+// 4. UPDATE DADOS (RANK/FUNÇÃO/BATTLE.NET)
+// =========================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_atualizar_dados']) && $ehDono) {
-    $id_patente = !empty($_POST['id_patente']) ? intval($_POST['id_patente']) : NULL;
-    $id_funcao = !empty($_POST['id_funcao']) ? intval($_POST['id_funcao']) : NULL;
-    $battlenet = !empty($_POST['codigo_battlenet']) ? trim($_POST['codigo_battlenet']) : NULL;
 
-    $update_dados = $conn->prepare("UPDATE jogador SET id_patente = ?, id_funcao = ?, codigo_battlenet = ? WHERE id_jogador = ?");
-    $update_dados->bind_param("iisi", $id_patente, $id_funcao, $battlenet, $id_logado);
-    $update_dados->execute();
-    
+    $id_patente = !empty($_POST['id_patente']) ? (int)$_POST['id_patente'] : null;
+    $id_funcao = !empty($_POST['id_funcao']) ? (int)$_POST['id_funcao'] : null;
+    $battlenet = !empty($_POST['codigo_battlenet']) ? trim($_POST['codigo_battlenet']) : null;
+
+    $stmt = $conn->prepare("
+        UPDATE jogador 
+        SET id_patente = ?, id_funcao = ?, codigo_battlenet = ?
+        WHERE id_jogador = ?
+    ");
+
+    $stmt->execute([$id_patente, $id_funcao, $battlenet, $id_logado]);
+
     header("Location: perfil.php?id=" . $id);
     exit;
 }
 
-// 3. UPLOAD DA FOTO (MEDIUMBLOB) - Disparado automaticamente ao selecionar o arquivo
+// =========================
+// 5. UPLOAD FOTO (BYTEA CORRIGIDO)
+// =========================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto']) && $ehDono) {
+
     if ($_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+
         $conteudo = file_get_contents($_FILES['foto']['tmp_name']);
-        $update = $conn->prepare("UPDATE jogador SET foto_jogador = ? WHERE id_jogador = ?");
-        $null = NULL; 
-        $update->bind_param("bi", $null, $id_logado);
-        $update->send_long_data(0, $conteudo);
-        $update->execute();
+
+        $stmt = $conn->prepare("
+            UPDATE jogador 
+            SET foto_jogador = :foto 
+            WHERE id_jogador = :id
+        ");
+
+        $stmt->bindValue(':foto', $conteudo, PDO::PARAM_LOB);
+        $stmt->bindValue(':id', $id_logado, PDO::PARAM_INT);
+
+        $stmt->execute();
+
         header("Location: perfil.php?id=" . $id);
         exit;
     }
 }
 
-// 4. BUSCA DADOS DO JOGADOR
+// =========================
+// 6. BUSCA JOGADOR
+// =========================
 $sql = "
 SELECT 
     j.*, 
@@ -56,36 +99,63 @@ WHERE j.id_jogador = ?
 ";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$jogador = $stmt->get_result()->fetch_assoc();
+$stmt->execute([$id]);
+$jogador = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$jogador) { die("Jogador não encontrado."); }
-
-// BUSCA OPÇÕES PARA OS SELECTS (Apenas se for o Dono da conta)
-$todas_patentes = [];
-$todas_funcoes = [];
-if ($ehDono) {
-    $todas_patentes = $conn->query("SELECT id_patente, nome_patente FROM patente ORDER BY id_patente ASC");
-    $todas_funcoes = $conn->query("SELECT id_funcao, nome_funcao FROM funcao ORDER BY nome_funcao ASC");
+if (!$jogador) {
+    die("Jogador não encontrado.");
 }
 
-// 5. BUSCA POSTS DO JOGADOR
-$query_posts = $conn->prepare("SELECT * FROM post WHERE id_jogador = ? ORDER BY id_post DESC");
-$query_posts->bind_param("i", $id);
-$query_posts->execute();
-$posts = $query_posts->get_result();
+// =========================
+// 7. SELECTS
+// =========================
+$todas_patentes = [];
+$todas_funcoes = [];
 
-// Função para renderizar arquivos BLOB
+if ($ehDono) {
+    $todas_patentes = $conn->query("SELECT id_patente, nome_patente FROM patente ORDER BY id_patente ASC")
+        ->fetchAll(PDO::FETCH_ASSOC);
+
+    $todas_funcoes = $conn->query("SELECT id_funcao, nome_funcao FROM funcao ORDER BY nome_funcao ASC")
+        ->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// =========================
+// 8. POSTS
+// =========================
+$stmt = $conn->prepare("SELECT * FROM post WHERE id_jogador = ? ORDER BY id_post DESC");
+$stmt->execute([$id]);
+$posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// =========================
+// 9. FUNÇÃO BLOB (BYTEA)
+// =========================
 function renderizarArquivoBlob($binario, $isPost = false) {
-    if (!$binario) return $isPost ? "" : "<span style='font-size:50px; color:#cbd5e1;'>👤</span>";
+
+    if (!$binario) {
+        return $isPost
+            ? ""
+            : "<span style='font-size:50px; color:#cbd5e1;'>👤</span>";
+    }
+
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime = $finfo->buffer($binario);
     $base64 = base64_encode($binario);
     $src = "data:$mime;base64,$base64";
-    if (strpos($mime, 'image/') === 0) return "<img src='$src' style='width:100%; height:100%; object-fit:cover;'>";
-    if (strpos($mime, 'video/') === 0) return "<video width='100%' height='100%' style='object-fit:cover' controls><source src='$src' type='$mime'></video>";
-    return "<div style='text-align:center'><a href='$src' download='arquivo' style='font-size:12px; color:#2563eb; font-weight:bold;'>📄 BAIXAR ARQUIVO</a></div>";
+
+    if (strpos($mime, 'image/') === 0) {
+        return "<img src='$src' style='width:100%;height:100%;object-fit:cover;'>";
+    }
+
+    if (strpos($mime, 'video/') === 0) {
+        return "<video controls style='width:100%;height:auto;'><source src='$src' type='$mime'></video>";
+    }
+
+    return "<div style='text-align:center'>
+                <a href='$src' download style='font-size:12px;color:#2563eb;font-weight:bold;'>
+                    📄 BAIXAR ARQUIVO
+                </a>
+            </div>";
 }
 ?>
 
