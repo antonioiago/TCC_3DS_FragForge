@@ -19,10 +19,9 @@ create table equipe
 	id_equipe int auto_increment primary key,
     nome_equipe varchar(100) not null unique,
     foto_equipe mediumblob,
-    pontuacao_equipe int
+    pontuacao_equipe int,
+    tipo_equipe VARCHAR(20) DEFAULT 'amigavel'
 );
-
-ALTER TABLE equipe ADD COLUMN tipo_equipe VARCHAR(20) DEFAULT 'amigavel' AFTER nome_equipe;
 
 create table jogador
 (
@@ -63,15 +62,6 @@ CREATE TABLE IF NOT EXISTS comentario (
     data_comentario TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_post) REFERENCES post(id_post) ON DELETE CASCADE,
     FOREIGN KEY (id_jogador) REFERENCES jogador(id_jogador) ON DELETE CASCADE
-);
-
-create table adm
-(
-	id_adm int auto_increment primary key,
-    nickname_adm varchar(100) not null,
-    email_adm varchar(100) not null unique,
-    senha_adm varchar(100) not null,
-    foto_adm mediumblob
 );
 
 CREATE TABLE recuperacao_senha (

@@ -1,0 +1,26 @@
+INSERT INTO patente (id_patente, nome_patente, icon_patente) VALUES
+(1, 'bronze', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/patentes/bronze.webp'),
+
+(2, 'prata', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/patentes/prata.webp'),
+
+(3, 'ouro', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/patentes/ouro.webp'),
+
+(4, 'platina', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/patentes/platina.webp'),
+
+(5, 'diamante', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/patentes/diamante.webp'),
+
+(6, 'mestre', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/patentes/mestre.webp'),
+
+(7, 'graomestre', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/patentes/graomestre.webp'),
+
+(8, 'champion', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/patentes/champion.webp');
+
+
+
+INSERT INTO funcao (id_funcao, nome_funcao, icon_funcao) VALUES
+
+(1, 'tank', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/funcao/tank.webp'),
+
+(2, 'dps', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/funcao/dps.webp'),
+
+(3, 'sup', 'https://oxflxsewydmzxfieejdl.supabase.co/storage/v1/object/public/imagens/funcao/sup.webp');

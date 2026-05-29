@@ -1,0 +1,123 @@
+CREATE TABLE funcao (
+    id_funcao INT PRIMARY KEY,
+    nome_funcao VARCHAR(20) NOT NULL,
+    icon_funcao VARCHAR(255)
+);
+
+CREATE TABLE patente (
+    id_patente INT PRIMARY KEY,
+    nome_patente VARCHAR(20) NOT NULL,
+    icon_patente VARCHAR(255)
+);
+
+CREATE TABLE equipe (
+    id_equipe SERIAL PRIMARY KEY,
+    nome_equipe VARCHAR(100) NOT NULL UNIQUE,
+    foto_equipe BYTEA,
+    pontuacao_equipe INT,
+    tipo_equipe VARCHAR(20) DEFAULT 'amigavel'
+);
+
+CREATE TABLE jogador (
+    id_jogador SERIAL PRIMARY KEY,
+    nickname_jogador VARCHAR(100) NOT NULL,
+    codigo_battlenet VARCHAR(100) UNIQUE,
+    email_jogador VARCHAR(100) NOT NULL UNIQUE,
+    senha_jogador VARCHAR(100),
+    id_funcao INT,
+    id_patente INT,
+    foto_jogador BYTEA,
+    pontuacao_jogador INT,
+    id_equipe INT,
+
+    CONSTRAINT fk_funcao
+        FOREIGN KEY (id_funcao)
+        REFERENCES funcao(id_funcao),
+
+    CONSTRAINT fk_patente
+        FOREIGN KEY (id_patente)
+        REFERENCES patente(id_patente),
+
+    CONSTRAINT fk_equipe
+        FOREIGN KEY (id_equipe)
+        REFERENCES equipe(id_equipe)
+);
+
+CREATE TABLE post (
+    id_post SERIAL PRIMARY KEY,
+    mensagem VARCHAR(255) NOT NULL,
+    comentario VARCHAR(255),
+    print_estatistica BYTEA,
+    jogada BYTEA,
+    curtidas INT,
+    id_equipe INT,
+    id_jogador INT,
+
+    CONSTRAINT fk_post_jogador
+        FOREIGN KEY (id_jogador)
+        REFERENCES jogador(id_jogador),
+
+    CONSTRAINT fk_post_equipe
+        FOREIGN KEY (id_equipe)
+        REFERENCES equipe(id_equipe)
+);
+
+CREATE TABLE comentario (
+    id_comentario SERIAL PRIMARY KEY,
+    id_post INT NOT NULL,
+    id_jogador INT NOT NULL,
+    texto TEXT NOT NULL,
+    data_comentario TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_comentario_post
+        FOREIGN KEY (id_post)
+        REFERENCES post(id_post)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_comentario_jogador
+        FOREIGN KEY (id_jogador)
+        REFERENCES jogador(id_jogador)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE recuperacao_senha (
+    id_recuperacao SERIAL PRIMARY KEY,
+    email VARCHAR(100) NOT NULL,
+    token VARCHAR(100) NOT NULL,
+    data_expiracao TIMESTAMP NOT NULL,
+    usado BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE solicitacao_equipe (
+    id_solicitacao SERIAL PRIMARY KEY,
+    id_jogador INT NOT NULL,
+    id_equipe INT NOT NULL,
+
+    CONSTRAINT fk_solicitacao_jogador
+        FOREIGN KEY (id_jogador)
+        REFERENCES jogador(id_jogador)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_solicitacao_equipe
+        FOREIGN KEY (id_equipe)
+        REFERENCES equipe(id_equipe)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE mural_equipe (
+    id_mural SERIAL PRIMARY KEY,
+    id_equipe INT NOT NULL,
+    id_jogador INT NOT NULL,
+    mensagem TEXT NOT NULL,
+    data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_mural_equipe
+        FOREIGN KEY (id_equipe)
+        REFERENCES equipe(id_equipe)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_mural_jogador
+        FOREIGN KEY (id_jogador)
+        REFERENCES jogador(id_jogador)
+        ON DELETE CASCADE
+);
