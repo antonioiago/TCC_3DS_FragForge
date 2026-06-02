@@ -1,19 +1,24 @@
 <?php
-// Inicia a sessão no topo absoluto para evitar problemas com redirecionamento e AJAX
+// ======================================================
+// SESSÃO
+// ======================================================
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$usuario_logado = isset($_SESSION['jogador']['id']);
-$id_jogador = $usuario_logado ? $_SESSION['jogador']['id'] : null;
+// ✔ PADRÃO ÚNICO DE LOGIN
+$id_jogador = $_SESSION['jogador']['id'] ?? null;
+$usuario_logado = $id_jogador !== null;
 
-// Conexão principal com o banco de dados (SUPABASE - POSTGRESQL)
+// ======================================================
+// CONEXÃO SUPABASE (POSTGRES)
+// ======================================================
 try {
     $host = "aws-1-sa-east-1.pooler.supabase.com";
     $port = "5432";
     $dbname = "postgres";
     $user = "postgres.oxflxsewydmzxfieejdl";
-    $password = "3dsfr@gF0rg3";
+    $password = "3dsfr@gF0rg3"; // (recomendado mover para env)
 
     $instancia = new PDO(
         "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require",
@@ -24,12 +29,19 @@ try {
     $instancia->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 } catch (Exception $e) {
-    echo "<div style='text-align:center; padding:20px; color:red;'>⚠️ Erro ao conectar ao banco de dados.</div>";
+    echo "<div style='text-align:center;color:red;padding:20px;'>Erro conexão banco</div>";
     exit;
 }
 
-// --- CURTIDAS (AJAX) ---
-if (isset($_GET['acao']) && $_GET['acao'] === 'curtir' && isset($_GET['id_post'])) {
+// ======================================================
+// CURTIDAS AJAX
+// ======================================================
+if (
+    isset($_GET['acao']) &&
+    $_GET['acao'] === 'curtir' &&
+    isset($_GET['id_post'])
+) {
+
     header('Content-Type: application/json');
 
     if (!$usuario_logado) {
@@ -37,98 +49,160 @@ if (isset($_GET['acao']) && $_GET['acao'] === 'curtir' && isset($_GET['id_post']
         exit;
     }
 
-    $id_post_curtir = (int)$_GET['id_post'];
+    $id_post = (int) $_GET['id_post'];
 
     if (!isset($_SESSION['curtidas_usuario'])) {
         $_SESSION['curtidas_usuario'] = [];
     }
 
-    if (isset($_SESSION['curtidas_usuario'][$id_post_curtir])) {
-        $stmt = $instancia->prepare("UPDATE post SET curtidas = GREATEST(0, curtidas - 1) WHERE id_post = ?");
-        $stmt->execute([$id_post_curtir]);
-        unset($_SESSION['curtidas_usuario'][$id_post_curtir]);
+    if (isset($_SESSION['curtidas_usuario'][$id_post])) {
+
+        $stmt = $instancia->prepare("
+            UPDATE post
+            SET curtidas = GREATEST(0, curtidas - 1)
+            WHERE id_post = ?
+        ");
+        $stmt->execute([$id_post]);
+
+        unset($_SESSION['curtidas_usuario'][$id_post]);
+
         $status = 'descurtido';
+
     } else {
-        $stmt = $instancia->prepare("UPDATE post SET curtidas = COALESCE(curtidas, 0) + 1 WHERE id_post = ?");
-        $stmt->execute([$id_post_curtir]);
-        $_SESSION['curtidas_usuario'][$id_post_curtir] = true;
+
+        $stmt = $instancia->prepare("
+            UPDATE post
+            SET curtidas = COALESCE(curtidas, 0) + 1
+            WHERE id_post = ?
+        ");
+        $stmt->execute([$id_post]);
+
+        $_SESSION['curtidas_usuario'][$id_post] = true;
+
         $status = 'curtido';
     }
 
     $stmt = $instancia->prepare("SELECT curtidas FROM post WHERE id_post = ?");
-    $stmt->execute([$id_post_curtir]);
-    $nova_quantidade = $stmt->fetchColumn();
+    $stmt->execute([$id_post]);
+    $curtidas = (int)$stmt->fetchColumn();
 
     echo json_encode([
         'sucesso' => true,
         'status' => $status,
-        'curtidas' => (int)$nova_quantidade
+        'curtidas' => $curtidas
     ]);
+
     exit;
 }
 
-// --- COMENTÁRIOS ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_comentar']) && $usuario_logado) {
-    $id_post_comentario = (int)$_POST['id_post_comentario'];
-    $texto_comentario = trim($_POST['texto_comentario']);
+// ======================================================
+// COMENTÁRIOS AJAX
+// ======================================================
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    ($_POST['acao'] ?? '') === 'comentar_ajax'
+) {
 
-    if (!empty($texto_comentario)) {
-        $stmt = $instancia->prepare("INSERT INTO comentario (id_post, id_jogador, texto) VALUES (?, ?, ?)");
-        $stmt->execute([$id_post_comentario, $id_jogador, $texto_comentario]);
+    header('Content-Type: application/json');
 
-        echo "<script>window.location.href='index.php';</script>";
+    if (!$usuario_logado) {
+        echo json_encode(['sucesso' => false, 'erro' => 'login_obrigatorio']);
         exit;
     }
+
+    $id_post = (int) $_POST['id_post'];
+    $texto = trim($_POST['texto']);
+
+    if ($texto === '') {
+        echo json_encode(['sucesso' => false]);
+        exit;
+    }
+
+    $stmt = $instancia->prepare("
+        INSERT INTO comentario (id_post, id_jogador, texto)
+        VALUES (?, ?, ?)
+    ");
+
+    $stmt->execute([$id_post, $id_jogador, $texto]);
+
+    echo json_encode([
+        'sucesso' => true,
+        'nickname' => $_SESSION['jogador']['nickname'] ?? 'Usuario',
+        'texto' => $texto
+    ]);
+
+    exit;
 }
 
 // Includes
 include __DIR__.'/includes/head.php';
 include __DIR__.'/includes/header.php';
 
-// filtros
 $ordenar = $_GET['ordenar'] ?? 'recente';
 $funcao  = $_GET['funcao'] ?? 'todas';
 
-// --- NOVA POSTAGEM (CORRIGIDO) ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $usuario_logado) {
+// ======================================================
+// POSTAGEM (CORRIGIDA)
+// ======================================================
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['acao_postar']) &&
+    $usuario_logado
+) {
 
     $mensagem = trim($_POST['mensagem']);
 
     $print_estatistica = null;
     $jogada = null;
 
-    // CRIA PASTA SE NÃO EXISTIR
+    // pasta local
     if (!is_dir("uploads")) {
-        mkdir("uploads", 0777, true);
+        mkdir("uploads", 0755, true);
     }
 
-    // IMAGEM
-    if (isset($_FILES['print_estatistica']) && $_FILES['print_estatistica']['error'] === 0) {
-        $ext = pathinfo($_FILES['print_estatistica']['name'], PATHINFO_EXTENSION);
-        $nome = uniqid("img_") . "." . $ext;
+    // ================= IMAGEM =================
+if (!empty($_FILES['print_estatistica']['name'])) {
 
-        move_uploaded_file($_FILES['print_estatistica']['tmp_name'], "uploads/" . $nome);
-        $print_estatistica = "uploads/" . $nome;
-    }
+    $ext = pathinfo($_FILES['print_estatistica']['name'], PATHINFO_EXTENSION);
+    $nome = uniqid("img_") . "." . $ext;
 
-    // VÍDEO
-    if (isset($_FILES['jogada']) && $_FILES['jogada']['error'] === 0) {
-        $ext = pathinfo($_FILES['jogada']['name'], PATHINFO_EXTENSION);
-        $nome = uniqid("vid_") . "." . $ext;
+    move_uploaded_file($_FILES['print_estatistica']['tmp_name'], "uploads/" . $nome);
 
-        move_uploaded_file($_FILES['jogada']['tmp_name'], "uploads/" . $nome);
-        $jogada = "uploads/" . $nome;
-    }
+    $print_estatistica = "uploads/" . $nome;
+}
+
+// ================= VÍDEO =================
+if (!empty($_FILES['jogada']['name'])) {
+
+    $ext = pathinfo($_FILES['jogada']['name'], PATHINFO_EXTENSION);
+    $nome = uniqid("vid_") . "." . $ext;
+
+    move_uploaded_file($_FILES['jogada']['tmp_name'], "uploads/" . $nome);
+
+    $jogada = "uploads/" . $nome;
+}
 
     if (!empty($mensagem)) {
+
         $stmt = $instancia->prepare("
-            INSERT INTO post (mensagem, print_estatistica, jogada, id_jogador, curtidas)
+            INSERT INTO post (
+                mensagem,
+                print_estatistica,
+                jogada,
+                id_jogador,
+                curtidas
+            )
             VALUES (?, ?, ?, ?, 0)
         ");
 
-        $stmt->execute([$mensagem, $print_estatistica, $jogada, $id_jogador]);
+        $stmt->execute([
+            $mensagem,
+            $print_estatistica,
+            $jogada,
+            $id_jogador
+        ]);
 
-        echo "<script>window.location.href='index.php';</script>";
+        header("Location: index.php");
         exit;
     }
 }
@@ -349,11 +423,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                     </select>
                 </div>
                 
-                <?php if($ordenar !== 'recente' || $funcao !== 'todas'): ?>
-                    <div style="margin-top: 18px;">
-                        <a href="index.php" style="color: #2563eb; text-decoration: none; font-size: 13px; font-weight: 700; border-bottom: 2px dashed #2563eb; padding-bottom: 2px;">Limpar Filtros</a>
-                    </div>
-                <?php endif; ?>
+                <?php if(
+                    ($ordenar ?? 'recente') !== 'recente' ||
+                    ($funcao ?? 'todas') !== 'todas'
+                ): ?>
+    <div style="margin-top: 18px;">
+        <a href="index.php"
+           style="color:#2563eb;text-decoration:none;font-size:13px;font-weight:700;border-bottom:2px dashed #2563eb;padding-bottom:2px;">
+            Limpar Filtros
+        </a>
+    </div>
+<?php endif; ?>
             </form>
         </div>
 
@@ -441,11 +521,22 @@ try {
             echo "<div class='post-header' style='display:flex;align-items:center;gap:12px;margin-bottom:12px;'>";
 
             // FOTO DO USUÁRIO (continua base64 porque ainda está no banco)
-            if (!empty($row['foto_jogador'])) {
-                $pfp = base64_encode($row['foto_jogador']);
-                echo "<img src='data:image/jpeg;base64,{$pfp}' 
-                        style='width:50px;height:50px;border-radius:50%;object-fit:cover;'>";
-            }
+           if (!empty($row['foto_jogador'])) {
+
+    echo "<img 
+            src='" . htmlspecialchars($row['foto_jogador'], ENT_QUOTES, 'UTF-8') . "' 
+            style='width:50px;height:50px;border-radius:50%;object-fit:cover;' 
+            alt='Foto de perfil'>";
+
+} else {
+
+    echo "<div style='width:50px;height:50px;border-radius:50%;
+                    background:#e2e8f0;display:flex;
+                    align-items:center;justify-content:center;
+                    color:#64748b;font-weight:bold;'>
+            👤
+          </div>";
+}
 
             echo "<div style='display:flex;flex-direction:column;'>";
             echo "<strong>
@@ -485,12 +576,23 @@ try {
             // BOTÕES
             echo "<div class='post-footer'>";
 
-            echo "<button class='btn-like {$classe_ativa}' onclick='alternarCurtida({$id_post_atual})'>";
-            echo "<span>{$emoji_coracao}</span> {$qtd_curtidas} Curtidas";
-            echo "</button>";
+            echo "<button
+        id='btn-like-{$id_post_atual}'
+        class='btn-like {$classe_ativa}'
+        onclick='alternarCurtida({$id_post_atual})'>";
+
+        echo "<span id='emoji-like-{$id_post_atual}'>{$emoji_coracao}</span>";
+
+        echo "&nbsp;";
+
+        echo "<span id='contagem-like-{$id_post_atual}'>{$qtd_curtidas}</span>";
+
+        echo " Curtidas";
+
+        echo "</button>";
 
             echo "<button class='btn-comment-toggle' onclick='toggleComentarios({$id_post_atual})'>";
-            echo "💬 {$qtd_comentarios} Comentários";
+            echo "💬 Comentários";
             echo "</button>";
 
             echo "</div>";
@@ -519,8 +621,31 @@ try {
                 echo "<p style='color:#64748b;font-size:13px;'>Nenhum comentário ainda.</p>";
             }
 
-            echo "</div>";
-            echo "</div>";
+            if ($usuario_logado) {
+
+    echo "
+    <form
+        class='form-comentario'
+        onsubmit='enviarComentario(event, {$id_post_atual})'>
+
+        <input
+            type='text'
+            id='input-comentario-{$id_post_atual}'
+            class='input-comentario'
+            placeholder='Escreva um comentário...'
+            required>
+
+        <button
+            type='submit'
+            class='btn-enviar-comentario'>
+            Enviar
+        </button>
+
+    </form>";
+}
+
+echo "</div>";
+echo "</div>";
         }
 
     } else {
@@ -619,6 +744,57 @@ function abrirModalPost() {
 function fecharModalPost() {
     document.getElementById('modalNovaPostagem').style.display = 'none';
     document.body.style.overflow = 'auto';
+}
+function enviarComentario(event, idPost) {
+
+    event.preventDefault();
+
+    const input = document.getElementById(
+        `input-comentario-${idPost}`
+    );
+
+    const texto = input.value.trim();
+
+    if (!texto) return;
+
+    const formData = new FormData();
+
+    formData.append('acao', 'comentar_ajax');
+    formData.append('id_post', idPost);
+    formData.append('texto', texto);
+
+    fetch('index.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(dados => {
+
+        if (!dados.sucesso) return;
+
+        const lista = document.querySelector(
+            `#box-comentarios-${idPost}`
+        );
+
+        const novoComentario =
+            document.createElement('div');
+
+        novoComentario.className =
+            'item-comentario';
+
+        novoComentario.innerHTML =
+            `<strong>@${dados.nickname}:</strong> ${dados.texto}`;
+
+        lista.insertBefore(
+            novoComentario,
+            lista.querySelector('.form-comentario')
+        );
+
+        input.value = '';
+    })
+    .catch(erro => {
+        console.error(erro);
+    });
 }
 </script>
 

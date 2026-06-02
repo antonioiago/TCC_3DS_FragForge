@@ -1,7 +1,9 @@
 <?php
 include __DIR__.'/includes/head.php';
 include __DIR__.'/includes/header.php';
-
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 // Captura dos filtros e ordenação via URL (GET) com valores padrão
 $ordenar = $_GET['ordenar'] ?? 'mais_pontos';
 $funcao  = $_GET['funcao'] ?? 'todas';
@@ -12,8 +14,8 @@ $equipe  = $_GET['equipe'] ?? 'todas';
 $modoEquipe = (strpos($ordenar, 'equipe_') === 0);
 
 try {
-    $instancia = new PDO('mysql:host=localhost;dbname=fragforge;charset=utf8', 'root', 'root');
-    $instancia->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    include __DIR__.'/includes/conn.php';
+    $instancia = $conn;
 
     // Carregar opções dos selects do filtro
     $todasFuncoes = $instancia->query("SELECT * FROM funcao")->fetchAll(PDO::FETCH_ASSOC);
@@ -35,7 +37,7 @@ try {
 
         $orderEquipe = ($ordenar === 'equipe_menos_pontos') ? "ASC" : "DESC";
         
-        $query_string = "SELECT id_equipe, nome_equipe, IFNULL(pontuacao_equipe, 0) AS pontuacao FROM equipe $whereEquipe ORDER BY pontuacao $orderEquipe, nome_equipe ASC";
+        $query_string = "SELECT id_equipe, nome_equipe, COALESCE(pontuacao_equipe, 0) AS pontuacao FROM equipe $whereEquipe ORDER BY pontuacao $orderEquipe, nome_equipe ASC";
         $stmt = $instancia->prepare($query_string);
         $stmt->execute($paramsEquipe);
         $equipesLista = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -58,11 +60,12 @@ try {
         }
 
         $whereSql = !empty($whereClauses) ? "WHERE " . implode(" AND ", $whereClauses) : "";
-        $orderBySql = ($ordenar === 'menos_pontos') ? "ORDER BY IFNULL(j.pontuacao_jogador, 0) ASC, j.nickname_jogador ASC" : "ORDER BY IFNULL(j.pontuacao_jogador, 0) DESC, j.id_patente DESC";
-
+        $orderBySql = ($ordenar === 'menos_pontos')
+    ? "ORDER BY COALESCE(j.pontuacao_jogador, 0) ASC, j.nickname_jogador ASC"
+    : "ORDER BY COALESCE(j.pontuacao_jogador, 0) DESC, j.id_patente DESC";
         $query_string = "
             SELECT j.id_jogador, j.nickname_jogador, j.codigo_battlenet, j.foto_jogador, 
-                   IFNULL(j.pontuacao_jogador, 0) AS pontuacao, 
+                   COALESCE(j.pontuacao_jogador, 0) AS pontuacao, 
                    f.nome_funcao, f.icon_funcao, 
                    pa.nome_patente, pa.icon_patente,
                    e.nome_equipe, e.pontuacao_equipe
@@ -260,9 +263,24 @@ try {
 
                                 <td>
                                     <div class="player-profile">
-                                        <?php if ($player['foto_jogador']): ?>
-                                            <img src="data:image/jpeg;base64,<?php echo base64_encode($player['foto_jogador']); ?>" class="player-avatar" alt="Avatar">
-                                        <?php else: ?>
+                                        <?php if (!empty($player['foto_jogador'])): ?>
+
+    <?php
+    // Detecta se já é URL (caso você tenha migrado depois)
+    $foto = $player['foto_jogador'];
+
+    if (str_starts_with($foto, 'http')) {
+        // já é URL (Supabase Storage ou externo)
+        $src = htmlspecialchars($foto);
+    } else {
+        // ainda é BLOB no banco
+        $src = 'data:image/jpeg;base64,' . base64_encode($foto);
+    }
+    ?>
+
+    <img src="<?php echo $src; ?>" class="player-avatar" alt="Avatar">
+
+<?php else: ?>
                                             <div class="player-avatar" style="display:flex; align-items:center; justify-content:center; background:#cbd5e1; font-weight:bold; color:#475569; font-size:12px;">N/A</div>
                                         <?php endif; ?>
                                         <div style="display: flex; flex-direction: column;">

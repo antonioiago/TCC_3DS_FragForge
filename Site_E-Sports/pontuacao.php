@@ -1,50 +1,95 @@
 <?php
 session_start();
 
-// Simulação de login
-if (!isset($_SESSION['id_jogador'])) {
-    $_SESSION['id_jogador'] = 1; 
-    $_SESSION['nickname'] = "JogadorTeste";
-}
 
-$host = "localhost";
-$user = "root";
-$pass = "root";
-$db   = "fragforge";
-
-$conn = new mysqli($host, $user, $pass, $db);
+include __DIR__.'/includes/conn.php';
 
 // LÓGICA DE SALVAMENTO AJAX
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['ajax_save'])) {
-    $id_jogador = $_SESSION['id_jogador'];
+    $id_jogador = $_SESSION['jogador']['id'];
     $pontos = intval($_POST['pontos']);
     $mensagem = $_POST['mensagem'];
     
     $imgConteudo = null;
-    if (isset($_FILES['foto']) && $_FILES['foto']['tmp_name'] != "") {
-        $imgConteudo = file_get_contents($_FILES['foto']['tmp_name']);
+
+if (
+    isset($_FILES['foto']) &&
+    $_FILES['foto']['error'] === UPLOAD_ERR_OK
+) {
+
+    $nomeArquivo = uniqid() . "_" . basename($_FILES['foto']['name']);
+
+    $pastaUploads = __DIR__ . "/uploads/";
+
+    if (!is_dir($pastaUploads)) {
+        mkdir($pastaUploads, 0777, true);
     }
 
-    $conn->begin_transaction();
+    move_uploaded_file(
+        $_FILES['foto']['tmp_name'],
+        $pastaUploads . $nomeArquivo
+    );
+
+    // Salva o caminho no banco (TEXT)
+    $imgConteudo = "uploads/" . $nomeArquivo;
+}
+
+    $conn->beginTransaction();
     try {
-        $stmt1 = $conn->prepare("UPDATE jogador SET pontuacao_jogador = IFNULL(pontuacao_jogador, 0) + ? WHERE id_jogador = ?");
-        $stmt1->bind_param("ii", $pontos, $id_jogador);
-        $stmt1->execute();
+        $stmt1 = $conn->prepare("
+    UPDATE jogador
+    SET pontuacao_jogador = COALESCE(pontuacao_jogador, 0) + ?
+    WHERE id_jogador = ?
+");
+$stmt1->execute([$pontos, $id_jogador]);
 
-        $stmt2 = $conn->prepare("INSERT INTO post (mensagem, print_estatistica, id_jogador) VALUES (?, ?, ?)");
-        $null = NULL;
-        $stmt2->bind_param("sbi", $mensagem, $null, $id_jogador);
-        $stmt2->send_long_data(1, $imgConteudo);
-        $stmt2->execute();
+        $stmt2 = $conn->prepare("
+    INSERT INTO post (mensagem, print_estatistica, id_jogador)
+    VALUES (?, ?, ?)
+");
 
-        $stmt3 = $conn->prepare("UPDATE equipe e JOIN jogador j ON e.id_equipe = j.id_equipe SET e.pontuacao_equipe = IFNULL(e.pontuacao_equipe, 0) + ? WHERE j.id_jogador = ?");
-        $stmt3->bind_param("ii", $pontos, $id_jogador);
-        $stmt3->execute();
+$stmt2->execute([
+    $mensagem,
+    $imgConteudo,
+    $id_jogador
+]);
+
+        $stmtEquipe = $conn->prepare("
+    SELECT id_equipe
+    FROM jogador
+    WHERE id_jogador = ?
+");
+$stmtEquipe->execute([$id_jogador]);
+
+$idEquipe = $stmtEquipe->fetchColumn();
+
+if ($idEquipe) {
+
+    $stmtTotal = $conn->prepare("
+        SELECT COALESCE(SUM(pontuacao_jogador), 0)
+        FROM jogador
+        WHERE id_equipe = ?
+    ");
+    $stmtTotal->execute([$idEquipe]);
+
+    $pontuacaoEquipe = $stmtTotal->fetchColumn();
+
+    $stmtUpdate = $conn->prepare("
+        UPDATE equipe
+        SET pontuacao_equipe = ?
+        WHERE id_equipe = ?
+    ");
+
+    $stmtUpdate->execute([
+        $pontuacaoEquipe,
+        $idEquipe
+    ]);
+}
 
         $conn->commit();
         echo "Sucesso! " . $pontos . " pontos adicionados.";
     } catch (Exception $e) {
-        $conn->rollback();
+        $conn->rollBack();
         echo "Erro: " . $e->getMessage();
     }
     exit;

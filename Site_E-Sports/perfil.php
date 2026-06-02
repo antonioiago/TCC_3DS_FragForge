@@ -56,26 +56,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_atualizar_dados'
     header("Location: perfil.php?id=" . $id);
     exit;
 }
-
 // =========================
-// 5. UPLOAD FOTO (BYTEA CORRIGIDO)
+// 5. UPLOAD FOTO (SUPABASE - SEM SECRET KEY)
 // =========================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['foto']) && $ehDono) {
 
     if ($_FILES['foto']['error'] === UPLOAD_ERR_OK) {
 
-        $conteudo = file_get_contents($_FILES['foto']['tmp_name']);
+        $supabaseUrl = 'https://oxflxsewydmzxfieejdl.supabase.co';
+        $anonKey  = 'sb_publishable_fTi-vAXwMYFFXI61eMfbAQ_V0-u6YG_'; // use a ANON PUBLIC KEY do Supabase
+        $bucket   = 'perfis';
 
-        $stmt = $conn->prepare("
-            UPDATE jogador 
-            SET foto_jogador = :foto 
-            WHERE id_jogador = :id
-        ");
+        $arquivoTmp = $_FILES['foto']['tmp_name'];
+        $nomeArquivo = 'perfil_' . $id_logado . '_' . time() . '.jpg';
 
-        $stmt->bindValue(':foto', $conteudo, PDO::PARAM_LOB);
-        $stmt->bindValue(':id', $id_logado, PDO::PARAM_INT);
+        $conteudo = file_get_contents($arquivoTmp);
 
-        $stmt->execute();
+        $url = $supabaseUrl . "/storage/v1/object/$bucket/$nomeArquivo";
+
+        $ch = curl_init($url);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $conteudo);
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bearer $anonKey",
+            "apikey: $anonKey",
+            "Content-Type: " . mime_content_type($arquivoTmp)
+        ]);
+
+        $response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+curl_close($ch);
+
+if ($httpCode === 200 || $httpCode === 201) {
+
+    $urlFoto = $supabaseUrl . "/storage/v1/object/public/$bucket/$nomeArquivo";
+
+    $stmt = $conn->prepare("
+        UPDATE jogador
+        SET foto_jogador = ?
+        WHERE id_jogador = ?
+    ");
+
+    $stmt->execute([$urlFoto, $id_logado]);
+
+    header("Location: perfil.php?id=" . $id);
+    exit;
+}
+
+echo "<pre>";
+echo "HTTP CODE: $httpCode\n";
+echo $response;
+echo "</pre>";
+exit;
+
+if ($httpCode === 200 || $httpCode === 201) {
+
+    $urlFoto = $supabaseUrl . "/storage/v1/object/public/$bucket/$nomeArquivo";
+
+    echo $urlFoto;
+    echo "<br><br>";
+
+    $stmt = $conn->prepare("
+        UPDATE jogador
+        SET foto_jogador = ?
+        WHERE id_jogador = ?
+    ");
+
+    $ok = $stmt->execute([$urlFoto, $id_logado]);
+
+    var_dump($ok);
+
+    exit;
+}
 
         header("Location: perfil.php?id=" . $id);
         exit;
@@ -273,9 +329,17 @@ function renderizarArquivoBlob($binario, $isPost = false) {
             </form>
             <?php endif; ?>
 
-            <div class="perfil-foto <?php echo $ehDono ? 'perfil-foto-dono' : ''; ?>" <?php echo $ehDono ? 'onclick="dispararUpload()"' : ''; ?> title="<?php echo $ehDono ? 'Clique para mudar a foto de perfil' : ''; ?>">
-                <?php echo renderizarArquivoBlob($jogador['foto_jogador']); ?>
-            </div>
+            <div class="perfil-foto <?php echo $ehDono ? 'perfil-foto-dono' : ''; ?>" 
+     <?php echo $ehDono ? 'onclick="dispararUpload()"' : ''; ?>>
+
+    <?php if (!empty($jogador['foto_jogador'])): ?>
+        <img src="<?php echo htmlspecialchars($jogador['foto_jogador']); ?>"
+             style="width:100%;height:100%;object-fit:cover;">
+    <?php else: ?>
+        <span style="font-size:50px; color:#cbd5e1;">👤</span>
+    <?php endif; ?>
+
+</div>
             
             <div class="info">
                 <h1 class="nickname">
@@ -314,72 +378,145 @@ function renderizarArquivoBlob($binario, $isPost = false) {
         </div>
 
         <?php if($ehDono): ?>
-        <div class="edit-panel">
-            <p style="font-weight: bold; margin-top: 0; margin-bottom: 15px; font-size: 15px; color: #0f172a; display:flex; align-items:center; gap:6px;">⚙️ Gerenciar Dados do Perfil</p>
-            <form method="POST" action="perfil.php?id=<?php echo $id; ?>">
-                <div class="edit-grid">
-                    <div class="form-group">
-                        <label for="id_patente">Patente / Rank</label>
-                        <select name="id_patente" id="id_patente" class="form-control">
-                            <option value="">Selecione sua Patente</option>
-                            <?php while($patente = $todas_patentes->fetch_assoc()){ ?>
-                                <option value="<?php echo $patente['id_patente']; ?>" <?php echo ($jogador['id_patente'] == $patente['id_patente']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($patente['nome_patente']); ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                    </div>
+<div class="edit-panel">
+    <p style="font-weight: bold; margin-top: 0; margin-bottom: 15px; font-size: 15px; color: #0f172a; display:flex; align-items:center; gap:6px;">
+        ⚙️ Gerenciar Dados do Perfil
+    </p>
 
-                    <div class="form-group">
-                        <label for="id_funcao">Função In-Game</label>
-                        <select name="id_funcao" id="id_funcao" class="form-control">
-                            <option value="">Selecione sua Função</option>
-                            <?php while($funcao = $todas_funcoes->fetch_assoc()){ ?>
-                                <option value="<?php echo $funcao['id_funcao']; ?>" <?php echo ($jogador['id_funcao'] == $funcao['id_funcao']) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($funcao['nome_funcao']); ?>
-                                </option>
-                            <?php } ?>
-                        </select>
-                    </div>
+    <form method="POST" action="perfil.php?id=<?php echo $id; ?>">
+        <div class="edit-grid">
 
-                    <div class="form-group">
-                        <label for="codigo_battlenet">Battle.net ID</label>
-                        <input type="text" name="codigo_battlenet" id="codigo_battlenet" class="form-control" placeholder="Ex: Player#1234" value="<?php echo htmlspecialchars($jogador['codigo_battlenet'] ?? ''); ?>">
-                    </div>
-                </div>
-                <div style="display: flex; gap: 15px; align-items: center; justify-content: space-between; margin-top: 20px;">
-                    <button type="submit" name="acao_atualizar_dados" class="btn-action" style="flex: 1; padding: 12px;">Salvar Alterações do Perfil</button>
-                    <button type="button" class="btn-criar-postagem" onclick="abrirModalEstatisticas()" style="padding: 12px 25px;">Enviar Estatísticas</button>
-                </div>
-            </form>
+            <div class="form-group">
+                <label for="id_patente">Patente / Rank</label>
+                <select name="id_patente" id="id_patente" class="form-control">
+                    <option value="">Selecione sua Patente</option>
+
+                    <?php foreach($todas_patentes as $patente): ?>
+                        <option
+                            value="<?php echo $patente['id_patente']; ?>"
+                            <?php echo ($jogador['id_patente'] == $patente['id_patente']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($patente['nome_patente']); ?>
+                        </option>
+                    <?php endforeach; ?>
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="id_funcao">Função In-Game</label>
+                <select name="id_funcao" id="id_funcao" class="form-control">
+                    <option value="">Selecione sua Função</option>
+
+                    <?php foreach($todas_funcoes as $funcao): ?>
+                        <option
+                            value="<?php echo $funcao['id_funcao']; ?>"
+                            <?php echo ($jogador['id_funcao'] == $funcao['id_funcao']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($funcao['nome_funcao']); ?>
+                        </option>
+                    <?php endforeach; ?>
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="codigo_battlenet">Battle.net ID</label>
+                <input
+                    type="text"
+                    name="codigo_battlenet"
+                    id="codigo_battlenet"
+                    class="form-control"
+                    placeholder="Ex: Player#1234"
+                    value="<?php echo htmlspecialchars($jogador['codigo_battlenet'] ?? ''); ?>">
+            </div>
+
         </div>
-        <?php endif; ?>
+
+        <div style="display:flex;gap:15px;align-items:center;justify-content:space-between;margin-top:20px;">
+
+            <button
+                type="submit"
+                name="acao_atualizar_dados"
+                class="btn-action"
+                style="flex:1;padding:12px;">
+                Salvar Alterações do Perfil
+            </button>
+
+            <button
+                type="button"
+                class="btn-criar-postagem"
+                onclick="abrirModalEstatisticas()"
+                style="padding:12px 25px;">
+                📊 Enviar Estatísticas
+            </button>
+
+        </div>
+    </form>
+</div>
+<?php endif; ?>
     </div>
 
     <div class="posts-section">
-        <h2 class="section-title">Timeline de Atividade</h2>
-        <?php if ($posts->num_rows > 0): ?>
-            <?php while ($p = $posts->fetch_assoc()): ?>
-                <div class="post-card">
-                    <p style="margin-top: 0; font-size: 16px; line-height: 1.5;"><?php echo htmlspecialchars($p['mensagem']); ?></p>
-                    
-                    <?php if (!empty($p['print_estatistica'])): ?>
-                        <div class="post-media">
-                            <?php echo renderizarArquivoBlob($p['print_estatistica'], true); ?>
-                        </div>
-                    <?php endif; ?>
+    <h2 class="section-title">Timeline de Atividade</h2>
 
-                    <div class="post-footer">
-                        <span>❤️ <?php echo number_format($p['curtidas'] ?? 0, 0, '', '.'); ?> curtidas</span>
+    <?php if (!empty($posts)): ?>
+
+        <?php foreach ($posts as $p): ?>
+
+            <div class="post-card">
+
+                <p style="margin-top:0;font-size:16px;line-height:1.5;">
+                    <?php echo htmlspecialchars($p['mensagem'] ?? ''); ?>
+                </p>
+
+                <?php if (!empty($p['print_estatistica'])): ?>
+
+                    <div class="post-media">
+
+                        <img
+                            src="<?php echo htmlspecialchars($p['print_estatistica']); ?>"
+                            alt="Imagem da postagem"
+                            style="width:100%;display:block;border-radius:15px;">
+
                     </div>
+
+                <?php endif; ?>
+
+                <?php if (!empty($p['jogada'])): ?>
+
+                    <div class="post-media">
+
+                        <video controls style="width:100%;border-radius:15px;">
+                            <source
+                                src="<?php echo htmlspecialchars($p['jogada']); ?>"
+                                type="video/mp4">
+                            Seu navegador não suporta vídeo.
+                        </video>
+
+                    </div>
+
+                <?php endif; ?>
+
+                <div class="post-footer">
+                    <span>
+                        ❤️ <?php echo (int)($p['curtidas'] ?? 0); ?> curtidas
+                    </span>
                 </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <div class="post-card" style="text-align: center; padding: 40px 20px;">
-                <p style="color: #94a3b8; margin: 0;">Sem posts ou atividades recentes neste perfil.</p>
+
             </div>
-        <?php endif; ?>
-    </div>
+
+        <?php endforeach; ?>
+
+    <?php else: ?>
+
+        <div class="post-card" style="text-align:center;padding:40px 20px;">
+            <p style="color:#94a3b8;margin:0;">
+                Sem posts ou atividades recentes neste perfil.
+            </p>
+        </div>
+
+    <?php endif; ?>
+
+</div>
 </div>
 
 <div id="modalEstatisticas" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.75); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
