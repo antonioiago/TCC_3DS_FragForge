@@ -1,107 +1,208 @@
 <?php
-// Inicia a sessão no topo absoluto para evitar problemas com redirecionamento e AJAX
+// ======================================================
+// SESSÃO
+// ======================================================
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$usuario_logado = isset($_SESSION['jogador']['id']);
-$id_jogador = $usuario_logado ? $_SESSION['jogador']['id'] : null;
+// ✔ PADRÃO ÚNICO DE LOGIN
+$id_jogador = $_SESSION['jogador']['id'] ?? null;
+$usuario_logado = $id_jogador !== null;
 
-// Conexão principal com o banco de dados
+// ======================================================
+// CONEXÃO SUPABASE (POSTGRES)
+// ======================================================
 try {
-    $instancia = new PDO('mysql:host=localhost;dbname=fragforge;charset=utf8', 'root', 'root');
+    $host = "aws-1-sa-east-1.pooler.supabase.com";
+    $port = "5432";
+    $dbname = "postgres";
+    $user = "postgres.oxflxsewydmzxfieejdl";
+    $password = "3dsfr@gF0rg3"; // (recomendado mover para env)
+
+    $instancia = new PDO(
+        "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require",
+        $user,
+        $password
+    );
+
     $instancia->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
 } catch (Exception $e) {
-    echo "<div style='text-align:center; padding:20px; color:red;'>⚠️ Erro ao conectar ao banco de dados.</div>";
+    echo "<div style='text-align:center;color:red;padding:20px;'>Erro conexão banco</div>";
     exit;
 }
 
-// --- LÓGICA DE CURTIDAS INTERATIVAS (AJAX) ---
-if (isset($_GET['acao']) && $_GET['acao'] === 'curtir' && isset($_GET['id_post'])) {
+// ======================================================
+// CURTIDAS AJAX
+// ======================================================
+if (
+    isset($_GET['acao']) &&
+    $_GET['acao'] === 'curtir' &&
+    isset($_GET['id_post'])
+) {
+
     header('Content-Type: application/json');
-    
+
     if (!$usuario_logado) {
         echo json_encode(['sucesso' => false, 'erro' => 'login_obrigatorio']);
         exit;
     }
 
-    $id_post_curtir = (int)$_GET['id_post'];
+    $id_post = (int) $_GET['id_post'];
 
     if (!isset($_SESSION['curtidas_usuario'])) {
         $_SESSION['curtidas_usuario'] = [];
     }
 
-    // Se já curtiu nesta sessão, diminui a curtida (Descurtir). Caso contrário, aumenta (+1).
-    if (isset($_SESSION['curtidas_usuario'][$id_post_curtir])) {
-        $stmt = $instancia->prepare("UPDATE post SET curtidas = GREATEST(0, curtidas - 1) WHERE id_post = ?");
-        $stmt->execute([$id_post_curtir]);
-        unset($_SESSION['curtidas_usuario'][$id_post_curtir]);
+    if (isset($_SESSION['curtidas_usuario'][$id_post])) {
+
+        $stmt = $instancia->prepare("
+            UPDATE post
+            SET curtidas = GREATEST(0, curtidas - 1)
+            WHERE id_post = ?
+        ");
+        $stmt->execute([$id_post]);
+
+        unset($_SESSION['curtidas_usuario'][$id_post]);
+
         $status = 'descurtido';
+
     } else {
-        $stmt = $instancia->prepare("UPDATE post SET curtidas = COALESCE(curtidas, 0) + 1 WHERE id_post = ?");
-        $stmt->execute([$id_post_curtir]);
-        $_SESSION['curtidas_usuario'][$id_post_curtir] = true;
+
+        $stmt = $instancia->prepare("
+            UPDATE post
+            SET curtidas = COALESCE(curtidas, 0) + 1
+            WHERE id_post = ?
+        ");
+        $stmt->execute([$id_post]);
+
+        $_SESSION['curtidas_usuario'][$id_post] = true;
+
         $status = 'curtido';
     }
 
-    // Busca a quantidade atualizada direto do banco
     $stmt = $instancia->prepare("SELECT curtidas FROM post WHERE id_post = ?");
-    $stmt->execute([$id_post_curtir]);
-    $nova_quantidade = $stmt->fetchColumn();
+    $stmt->execute([$id_post]);
+    $curtidas = (int)$stmt->fetchColumn();
 
     echo json_encode([
         'sucesso' => true,
         'status' => $status,
-        'curtidas' => (int)$nova_quantidade
+        'curtidas' => $curtidas
     ]);
+
     exit;
 }
 
-// --- LÓGICA DE SUBMISSÃO DE COMENTÁRIOS ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_comentar']) && $usuario_logado) {
-    $id_post_comentario = (int)$_POST['id_post_comentario'];
-    $texto_comentario = trim($_POST['texto_comentario']);
+// ======================================================
+// COMENTÁRIOS AJAX
+// ======================================================
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    ($_POST['acao'] ?? '') === 'comentar_ajax'
+) {
 
-    if (!empty($texto_comentario)) {
-        $stmt_comentario = $instancia->prepare("INSERT INTO comentario (id_post, id_jogador, texto) VALUES (?, ?, ?)");
-        $stmt_comentario->execute([$id_post_comentario, $id_jogador, $texto_comentario]);
-        
-        // Recarrega a página para exibir o comentário inserido
-        echo "<script>window.location.href='index.php';</script>";
+    header('Content-Type: application/json');
+
+    if (!$usuario_logado) {
+        echo json_encode(['sucesso' => false, 'erro' => 'login_obrigatorio']);
         exit;
     }
+
+    $id_post = (int) $_POST['id_post'];
+    $texto = trim($_POST['texto']);
+
+    if ($texto === '') {
+        echo json_encode(['sucesso' => false]);
+        exit;
+    }
+
+    $stmt = $instancia->prepare("
+        INSERT INTO comentario (id_post, id_jogador, texto)
+        VALUES (?, ?, ?)
+    ");
+
+    $stmt->execute([$id_post, $id_jogador, $texto]);
+
+    echo json_encode([
+        'sucesso' => true,
+        'nickname' => $_SESSION['jogador']['nickname'] ?? 'Usuario',
+        'texto' => $texto
+    ]);
+
+    exit;
 }
 
-// Carrega os layouts estruturais da página após verificar requisições AJAX
+// Includes
 include __DIR__.'/includes/head.php';
 include __DIR__.'/includes/header.php';
 
-// Captura os filtros da URL (via GET) com valores padrão
 $ordenar = $_GET['ordenar'] ?? 'recente';
 $funcao  = $_GET['funcao'] ?? 'todas';
 
-// --- LOGICA DE SUBMISSÃO DA NOVA POSTAGEM (DENTRO DO MODAL) ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $usuario_logado) {
+// ======================================================
+// POSTAGEM (CORRIGIDA)
+// ======================================================
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['acao_postar']) &&
+    $usuario_logado
+) {
+
     $mensagem = trim($_POST['mensagem']);
+
     $print_estatistica = null;
     $jogada = null;
 
-    // Upload de Imagem (print_estatistica)
-    if (isset($_FILES['print_estatistica']) && $_FILES['print_estatistica']['error'] == 0) {
-        $print_estatistica = file_get_contents($_FILES['print_estatistica']['tmp_name']);
+    // pasta local
+    if (!is_dir("uploads")) {
+        mkdir("uploads", 0755, true);
     }
 
-    // Upload de Vídeo (jogada)
-    if (isset($_FILES['jogada']) && $_FILES['jogada']['error'] == 0) {
-        $jogada = file_get_contents($_FILES['jogada']['tmp_name']);
-    }
+    // ================= IMAGEM =================
+if (!empty($_FILES['print_estatistica']['name'])) {
+
+    $ext = pathinfo($_FILES['print_estatistica']['name'], PATHINFO_EXTENSION);
+    $nome = uniqid("img_") . "." . $ext;
+
+    move_uploaded_file($_FILES['print_estatistica']['tmp_name'], "uploads/" . $nome);
+
+    $print_estatistica = "uploads/" . $nome;
+}
+
+// ================= VÍDEO =================
+if (!empty($_FILES['jogada']['name'])) {
+
+    $ext = pathinfo($_FILES['jogada']['name'], PATHINFO_EXTENSION);
+    $nome = uniqid("vid_") . "." . $ext;
+
+    move_uploaded_file($_FILES['jogada']['tmp_name'], "uploads/" . $nome);
+
+    $jogada = "uploads/" . $nome;
+}
 
     if (!empty($mensagem)) {
-        $stmt = $instancia->prepare("INSERT INTO post (mensagem, print_estatistica, jogada, id_jogador, curtidas) VALUES (?, ?, ?, ?, 0)");
-        $stmt->execute([$mensagem, $print_estatistica, $jogada, $id_jogador]);
-        
-        // Recarrega a página atual para exibir o novo post limpo
-        echo "<script>window.location.href='index.php';</script>";
+
+        $stmt = $instancia->prepare("
+            INSERT INTO post (
+                mensagem,
+                print_estatistica,
+                jogada,
+                id_jogador,
+                curtidas
+            )
+            VALUES (?, ?, ?, ?, 0)
+        ");
+
+        $stmt->execute([
+            $mensagem,
+            $print_estatistica,
+            $jogada,
+            $id_jogador
+        ]);
+
+        header("Location: index.php");
         exit;
     }
 }
@@ -322,11 +423,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
                     </select>
                 </div>
                 
-                <?php if($ordenar !== 'recente' || $funcao !== 'todas'): ?>
-                    <div style="margin-top: 18px;">
-                        <a href="index.php" style="color: #2563eb; text-decoration: none; font-size: 13px; font-weight: 700; border-bottom: 2px dashed #2563eb; padding-bottom: 2px;">Limpar Filtros</a>
-                    </div>
-                <?php endif; ?>
+                <?php if(
+                    ($ordenar ?? 'recente') !== 'recente' ||
+                    ($funcao ?? 'todas') !== 'todas'
+                ): ?>
+    <div style="margin-top: 18px;">
+        <a href="index.php"
+           style="color:#2563eb;text-decoration:none;font-size:13px;font-weight:700;border-bottom:2px dashed #2563eb;padding-bottom:2px;">
+            Limpar Filtros
+        </a>
+    </div>
+<?php endif; ?>
             </form>
         </div>
 
@@ -336,152 +443,223 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao_postar']) && $us
 
         <div class="feed">
             <?php
-            try {
-                $whereClauses = [];
-                $params = [];
-                if ($funcao !== 'todas') {
-                    $whereClauses[] = "f.nome_funcao = :funcao";
-                    $params[':funcao'] = $funcao;
-                }
-                $whereSql = !empty($whereClauses) ? "WHERE " . implode(" AND ", $whereClauses) : "";
 
-                // --- ATUALIZAÇÃO DA LÓGICA DE ORDENAÇÃO ---
-                switch ($ordenar) {
-                    case 'mais_curtidas':
-                        $orderBySql = "ORDER BY p.curtidas DESC, p.id_post DESC";
-                        break;
-                    case 'maior_pontuacao':
-                        $orderBySql = "ORDER BY j.pontuacao_jogador DESC, p.id_post DESC";
-                        break;
-                    case 'maior_rank':
-                        $orderBySql = "ORDER BY j.id_patente DESC, j.pontuacao_jogador DESC, p.id_post DESC";
-                        break;
-                    case 'recente':
-                    default:
-                        $orderBySql = "ORDER BY p.id_post DESC";
-                        break;
-                }
+try {
+    $whereClauses = [];
+    $params = [];
 
-                $query_string = "
-                    SELECT p.id_post, p.mensagem, p.curtidas, j.nickname_jogador, j.id_jogador, j.foto_jogador, 
-                           p.print_estatistica, p.jogada, f.icon_funcao, pa.icon_patente
-                    FROM post p
-                    JOIN jogador j ON p.id_jogador = j.id_jogador
-                    LEFT JOIN funcao f ON j.id_funcao = f.id_funcao
-                    LEFT JOIN patente pa ON j.id_patente = pa.id_patente
-                    $whereSql
-                    $orderBySql
-                ";
+    if ($funcao !== 'todas') {
+        $whereClauses[] = "f.nome_funcao = :funcao";
+        $params[':funcao'] = $funcao;
+    }
 
-                $stmt = $instancia->prepare($query_string);
-                $stmt->execute($params);
-                $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $whereSql = !empty($whereClauses) ? "WHERE " . implode(" AND ", $whereClauses) : "";
 
-                if (count($resultados) > 0) {
-                    foreach ($resultados as $row) {
-                        $id_post_atual = $row['id_post'];
-                        $qtd_curtidas = (int)($row['curtidas'] ?? 0);
-                        
-                        // Verifica se este post foi marcado como curtido nesta sessão
-                        $usuario_ja_curtiu = isset($_SESSION['curtidas_usuario'][$id_post_atual]);
-                        $classe_ativa = $usuario_ja_curtiu ? 'active' : '';
-                        $emoji_coracao = $usuario_ja_curtiu ? '❤️' : '🤍';
+    // ORDENAÇÃO
+    switch ($ordenar) {
+        case 'mais_curtidas':
+            $orderBySql = "ORDER BY p.curtidas DESC, p.id_post DESC";
+            break;
 
-                        // Conta quantos comentários esse post específico possui
-                        $stmt_qtd_c = $instancia->prepare("SELECT COUNT(*) FROM comentario WHERE id_post = ?");
-                        $stmt_qtd_c->execute([$id_post_atual]);
-                        $qtd_comentarios = $stmt_qtd_c->fetchColumn();
+        case 'maior_pontuacao':
+            $orderBySql = "ORDER BY j.pontuacao_jogador DESC, p.id_post DESC";
+            break;
 
-                        echo "<div class='post' style='background: #1e293b; border-radius: 12px; padding: 20px; color: white; margin-bottom: 20px;'>";
-                            echo "<div class='post-header' style='display:flex; align-items:center; gap:12px; margin-bottom:12px;'>";
-                                
-                                if($row['foto_jogador']) {
-                                    $pfp = base64_encode($row['foto_jogador']);
-                                    echo "<img src='data:image/jpeg;base64,{$pfp}' class='foto-jogador-feed' style='width:50px; height:50px; border-radius:50%; object-fit:cover;'>";
-                                }
+        case 'maior_rank':
+            $orderBySql = "ORDER BY j.id_patente DESC, j.pontuacao_jogador DESC, p.id_post DESC";
+            break;
 
-                                echo "<div style='display:flex; flex-direction:column;'>";
-                                    echo "<strong><a href='perfil.php?id=".$row['id_jogador']."' style='color:white; text-decoration:none;'>".htmlspecialchars($row['nickname_jogador'])."</a></strong>";
-                                echo "</div>";
-                            echo "</div>"; 
+        case 'recente':
+        default:
+            $orderBySql = "ORDER BY p.id_post DESC";
+            break;
+    }
 
-                            echo "<p style='margin: 10px 0;'>".htmlspecialchars($row['mensagem'])."</p>";
+    $query_string = "
+        SELECT 
+            p.id_post,
+            p.mensagem,
+            p.curtidas,
+            j.nickname_jogador,
+            j.id_jogador,
+            j.foto_jogador,
+            p.print_estatistica,
+            p.jogada,
+            f.icon_funcao,
+            pa.icon_patente
+        FROM post p
+        JOIN jogador j ON p.id_jogador = j.id_jogador
+        LEFT JOIN funcao f ON j.id_funcao = f.id_funcao
+        LEFT JOIN patente pa ON j.id_patente = pa.id_patente
+        $whereSql
+        $orderBySql
+    ";
 
-                            if($row['print_estatistica']){
-                                $img = base64_encode($row['print_estatistica']);
-                                echo "<img class='post-img' src='data:image/jpeg;base64,{$img}' style='max-width:100%; border-radius:8px; margin-top:10px;'>";
-                            }
+    $stmt = $instancia->prepare($query_string);
+    $stmt->execute($params);
+    $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                            if($row['jogada']){
-                                echo "<div style='margin-top:10px;'>";
-                                    echo "<video controls style='width:100%; border-radius:8px; background:black;'>";
-                                        echo "<source src='exibir_video.php?id=".$row['id_post']."' type='video/mp4'>";
-                                        echo "Seu navegador não suporta vídeos.";
-                                    echo "</video>";
-                                echo "</div>";
-                            }
+    if ($resultados && count($resultados) > 0) {
 
-                            // --- ÁREA DOS BOTÕES DE INTERAÇÃO ---
-                            echo "<div class='post-footer'>";
-                                echo "<button class='btn-like {$classe_ativa}' onclick='alternarCurtida({$id_post_atual})' id='btn-like-{$id_post_atual}'>";
-                                    echo "<span id='emoji-like-{$id_post_atual}'>{$emoji_coracao}</span>";
-                                    echo "<span id='contagem-like-{$id_post_atual}'>{$qtd_curtidas}</span> Curtidas";
-                                echo "</button>";
+        foreach ($resultados as $row) {
 
-                                // BOTÃO DE COMENTÁRIOS
-                                echo "<button class='btn-comment-toggle' onclick='toggleComentarios({$id_post_atual})'>";
-                                    echo "💬 <span>{$qtd_comentarios}</span> Comentários";
-                                echo "</button>";
-                            echo "</div>";
+            $id_post_atual = $row['id_post'];
+            $qtd_curtidas = (int)($row['curtidas'] ?? 0);
 
-                            // --- SEÇÃO EXPANSÍVEL DE COMENTÁRIOS ---
-                            echo "<div id='box-comentarios-{$id_post_atual}' class='box-comentarios' style='display: none;'>";
-                                echo "<div class='lista-comentarios'>";
-                                
-                                // Busca os comentários desse post associando com o nickname do jogador
-                                $stmt_c = $instancia->prepare("
-                                    SELECT c.texto, j.nickname_jogador 
-                                    FROM comentario c 
-                                    JOIN jogador j ON c.id_jogador = j.id_jogador 
-                                    WHERE c.id_post = ? 
-                                    ORDER BY c.id_comentario ASC
-                                ");
-                                $stmt_c->execute([$id_post_atual]);
-                                $comentarios = $stmt_c->fetchAll(PDO::FETCH_ASSOC);
+            $usuario_ja_curtiu = isset($_SESSION['curtidas_usuario'][$id_post_atual]);
+            $classe_ativa = $usuario_ja_curtiu ? 'active' : '';
+            $emoji_coracao = $usuario_ja_curtiu ? '❤️' : '🤍';
 
-                                if (count($comentarios) > 0) {
-                                    foreach ($comentarios as $com) {
-                                        echo "<div class='item-comentario'>";
-                                            echo "<strong>@" . htmlspecialchars($com['nickname_jogador']) . ":</strong> ";
-                                            echo htmlspecialchars($com['texto']);
-                                        echo "</div>";
-                                    }
-                                } else {
-                                    echo "<p style='color: #64748b; font-size: 13px; margin: 5px 0;' id='sem-comentarios-{$id_post_atual}'>Nenhum comentário ainda. Seja o primeiro!</p>";
-                                }
-                                echo "</div>";
+            // quantidade de comentários
+            $stmt_qtd_c = $instancia->prepare("SELECT COUNT(*) FROM comentario WHERE id_post = ?");
+            $stmt_qtd_c->execute([$id_post_atual]);
+            $qtd_comentarios = (int)$stmt_qtd_c->fetchColumn();
 
-                                // Formuário para adicionar comentário (Apenas se logado)
-                                if ($usuario_logado) {
-                                    echo "<form method='POST' action='index.php' class='form-comentario'>";
-                                        echo "<input type='hidden' name='id_post_comentario' value='{$id_post_atual}'>";
-                                        echo "<input type='text' name='texto_comentario' class='input-comentario' placeholder='Escreva um comentário...' required>";
-                                        echo "<button type='submit' name='acao_comentar' class='btn-enviar-comentario'>Enviar</button>";
-                                    echo "</form>";
-                                } else {
-                                    echo "<p style='color: #94a3b8; font-size: 12px; margin: 5px 0;'>🔒 Faça <a href='form-login.php' style='color:#2563eb; text-decoration:underline;'>login</a> para comentar.</p>";
-                                }
-                            echo "</div>";
+            echo "<div class='post' style='background:#1e293b;border-radius:12px;padding:20px;color:white;margin-bottom:20px;'>";
 
-                        echo "</div>";
-                    }
-                } else {
-                    echo "<div style='text-align:center; padding: 40px; background:#1e293b; border-radius:12px; color:#64748b;'><p>Nenhuma postagem encontrada para esse filtro.</p></div>";
-                }
-            } catch (Exception $e) { 
-                echo "<div style='text-align:center; padding:20px; color:white;'>Erro ao carregar o feed.</div>"; 
+            // HEADER
+            echo "<div class='post-header' style='display:flex;align-items:center;gap:12px;margin-bottom:12px;'>";
+
+            // FOTO DO USUÁRIO (continua base64 porque ainda está no banco)
+           if (!empty($row['foto_jogador'])) {
+
+    echo "<img 
+            src='" . htmlspecialchars($row['foto_jogador'], ENT_QUOTES, 'UTF-8') . "' 
+            style='width:50px;height:50px;border-radius:50%;object-fit:cover;' 
+            alt='Foto de perfil'>";
+
+} else {
+
+    echo "<div style='width:50px;height:50px;border-radius:50%;
+                    background:#e2e8f0;display:flex;
+                    align-items:center;justify-content:center;
+                    color:#64748b;font-weight:bold;'>
+            👤
+          </div>";
+}
+
+            echo "<div style='display:flex;flex-direction:column;'>";
+            echo "<strong>
+                    <a href='perfil.php?id=".$row['id_jogador']."' 
+                       style='color:white;text-decoration:none;'>
+                        ".htmlspecialchars($row['nickname_jogador'], ENT_QUOTES, 'UTF-8')."
+                    </a>
+                  </strong>";
+            echo "</div>";
+
+            echo "</div>";
+
+            // MENSAGEM
+            echo "<p style='margin:10px 0;'>".htmlspecialchars($row['mensagem'] ?? '', ENT_QUOTES, 'UTF-8')."</p>";
+
+            /* =========================================================
+               🖼 IMAGEM (AGORA URL SUPABASE STORAGE)
+            ========================================================= */
+            if (!empty($row['print_estatistica'])) {
+                echo "<img class='post-img'
+                        src='".htmlspecialchars($row['print_estatistica'], ENT_QUOTES, 'UTF-8')."'
+                        style='max-width:100%;border-radius:8px;margin-top:10px;'>";
             }
-            ?>
+
+            /* =========================================================
+               🎥 VÍDEO (AGORA URL SUPABASE STORAGE)
+            ========================================================= */
+            if (!empty($row['jogada'])) {
+                echo "<div style='margin-top:10px;'>";
+                echo "<video controls style='width:100%;border-radius:8px;background:black;'>";
+                echo "<source src='".htmlspecialchars($row['jogada'], ENT_QUOTES, 'UTF-8')."' type='video/mp4'>";
+                echo "Seu navegador não suporta vídeos.";
+                echo "</video>";
+                echo "</div>";
+            }
+
+            // BOTÕES
+            echo "<div class='post-footer'>";
+
+            echo "<button
+        id='btn-like-{$id_post_atual}'
+        class='btn-like {$classe_ativa}'
+        onclick='alternarCurtida({$id_post_atual})'>";
+
+        echo "<span id='emoji-like-{$id_post_atual}'>{$emoji_coracao}</span>";
+
+        echo "&nbsp;";
+
+        echo "<span id='contagem-like-{$id_post_atual}'>{$qtd_curtidas}</span>";
+
+        echo " Curtidas";
+
+        echo "</button>";
+
+            echo "<button class='btn-comment-toggle' onclick='toggleComentarios({$id_post_atual})'>";
+            echo "💬 Comentários";
+            echo "</button>";
+
+            echo "</div>";
+
+            // COMENTÁRIOS
+            echo "<div id='box-comentarios-{$id_post_atual}' class='box-comentarios' style='display:none;'>";
+
+            $stmt_c = $instancia->prepare("
+                SELECT c.texto, j.nickname_jogador
+                FROM comentario c
+                JOIN jogador j ON c.id_jogador = j.id_jogador
+                WHERE c.id_post = ?
+                ORDER BY c.id_comentario ASC
+            ");
+            $stmt_c->execute([$id_post_atual]);
+            $comentarios = $stmt_c->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($comentarios) {
+                foreach ($comentarios as $com) {
+                    echo "<div class='item-comentario'>";
+                    echo "<strong>@".htmlspecialchars($com['nickname_jogador'], ENT_QUOTES, 'UTF-8').":</strong> ";
+                    echo htmlspecialchars($com['texto'], ENT_QUOTES, 'UTF-8');
+                    echo "</div>";
+                }
+            } else {
+                echo "<p style='color:#64748b;font-size:13px;'>Nenhum comentário ainda.</p>";
+            }
+
+            if ($usuario_logado) {
+
+    echo "
+    <form
+        class='form-comentario'
+        onsubmit='enviarComentario(event, {$id_post_atual})'>
+
+        <input
+            type='text'
+            id='input-comentario-{$id_post_atual}'
+            class='input-comentario'
+            placeholder='Escreva um comentário...'
+            required>
+
+        <button
+            type='submit'
+            class='btn-enviar-comentario'>
+            Enviar
+        </button>
+
+    </form>";
+}
+
+echo "</div>";
+echo "</div>";
+        }
+
+    } else {
+        echo "<div style='text-align:center;padding:40px;background:#1e293b;color:#64748b;border-radius:12px;'>
+                Nenhuma postagem encontrada.
+              </div>";
+    }
+
+} catch (Exception $e) {
+    echo "<div style='text-align:center;padding:20px;color:white;'>
+            Erro ao carregar feed.
+          </div>";
+}
+?>
         </div>
     </section>
 </main>
@@ -566,6 +744,57 @@ function abrirModalPost() {
 function fecharModalPost() {
     document.getElementById('modalNovaPostagem').style.display = 'none';
     document.body.style.overflow = 'auto';
+}
+function enviarComentario(event, idPost) {
+
+    event.preventDefault();
+
+    const input = document.getElementById(
+        `input-comentario-${idPost}`
+    );
+
+    const texto = input.value.trim();
+
+    if (!texto) return;
+
+    const formData = new FormData();
+
+    formData.append('acao', 'comentar_ajax');
+    formData.append('id_post', idPost);
+    formData.append('texto', texto);
+
+    fetch('index.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(dados => {
+
+        if (!dados.sucesso) return;
+
+        const lista = document.querySelector(
+            `#box-comentarios-${idPost}`
+        );
+
+        const novoComentario =
+            document.createElement('div');
+
+        novoComentario.className =
+            'item-comentario';
+
+        novoComentario.innerHTML =
+            `<strong>@${dados.nickname}:</strong> ${dados.texto}`;
+
+        lista.insertBefore(
+            novoComentario,
+            lista.querySelector('.form-comentario')
+        );
+
+        input.value = '';
+    })
+    .catch(erro => {
+        console.error(erro);
+    });
 }
 </script>
 

@@ -1,16 +1,26 @@
-
 <?php
-    const host = "localhost";
-    const port ="3306";
-    const user = "root";
-    const senha = "root";
-    const banco = "fragforge";
 
-    try{
-        $conn = new PDO("mysql:host=".host.";port=".port.";dbname=".banco, user, senha);
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    }
-    catch(PDOexpection $e){
-        echo "ERROR: ".$e->getMessage();
-    }
-?> 
+$host = "aws-1-sa-east-1.pooler.supabase.com";
+$port = "5432";
+$dbname = "postgres";
+$user = "postgres.oxflxsewydmzxfieejdl";
+$password = "3dsfr@gF0rg3";
+
+try {
+
+    $conn = new PDO(
+        "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require",
+        $user,
+        $password
+    );
+    
+
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    //echo "Conectado ao Supabase!"; 
+
+} catch(PDOException $e) {
+
+    die("ERRO: " . $e->getMessage());
+}
+?>

@@ -6,13 +6,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-try {
-    $conn = new PDO('mysql:host=localhost;dbname=fragforge;charset=utf8', 'root', 'root');
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo "<div style='text-align:center; padding:20px; color:red; font-weight:bold;'>⚠️ Erro de Conexão: " . $e->getMessage() . "</div>";
-    exit;
-}
+include __DIR__.'/includes/conn.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -97,9 +91,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $usuario_logado) {
             $nome_equipe = trim($_POST['nome_equipe']);
             $tipo_equipe = $_POST['tipo_equipe'];
             
-            $stmt = $conn->prepare("INSERT INTO equipe (nome_equipe, tipo_equipe, pontuacao_equipe) VALUES (?, ?, 0)");
-            $stmt->execute([$nome_equipe, $tipo_equipe]);
-            $id_nova_equipe = $conn->lastInsertId();
+            $stmt = $conn->prepare("
+    INSERT INTO equipe (nome_equipe, tipo_equipe, pontuacao_equipe)
+    VALUES (?, ?, 0)
+    RETURNING id_equipe
+");
+$stmt->execute([$nome_equipe, $tipo_equipe]);
+
+$id_nova_equipe = $stmt->fetchColumn();
             
             $stmt = $conn->prepare("UPDATE jogador SET id_equipe = ? WHERE id_jogador = ?");
             $stmt->execute([$id_nova_equipe, $id_jogador]);
@@ -170,7 +169,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $usuario_logado) {
 $mensagens_mural = [];
 if ($usuario_logado && !empty($jogador_info['id_equipe'])) {
     $stmt = $conn->prepare("
-        SELECT m.mensagem, DATE_FORMAT(m.data_envio, '%d/%m %H:%i') as data, j.nickname_jogador 
+        SELECT m.mensagem,
+       TO_CHAR(m.data_envio, 'DD/MM HH24:MI') as data,
+       j.nickname_jogador
         FROM mural_equipe m
         JOIN jogador j ON m.id_jogador = j.id_jogador
         WHERE m.id_equipe = ?
@@ -189,11 +190,19 @@ if ($eh_lider) {
 
 $query_equipes = "
     SELECT e.id_equipe, e.nome_equipe, COALESCE(e.tipo_equipe, 'amigavel') AS tipo_equipe, COALESCE(e.pontuacao_equipe, 0) AS pontuacao_equipe, COUNT(j.id_jogador) AS total_membros,
-           GROUP_CONCAT(
-               CONCAT(
-                   j.id_jogador, ':::', j.nickname_jogador, ' [Patente: ', COALESCE(p.nome_patente, 'Sem Patente'), ' | Função: ', COALESCE(f.nome_funcao, 'Não informada'), ']'
-               ) SEPARATOR '|||'
-           ) AS lista_membros
+           STRING_AGG(
+    CONCAT(
+        j.id_jogador,
+        ':::',
+        j.nickname_jogador,
+        ' [Patente: ',
+        COALESCE(p.nome_patente, 'Sem Patente'),
+        ' | Função: ',
+        COALESCE(f.nome_funcao, 'Não informada'),
+        ']'
+    ),
+    '|||'
+) AS lista_membros
     FROM equipe e
     LEFT JOIN jogador j ON e.id_equipe = j.id_equipe
     LEFT JOIN patente p ON j.id_patente = p.id_patente
@@ -425,9 +434,9 @@ function abrirMembros(nome, membrosString, idEquipeCard) {
             
             // Regra: O primeiro membro da lista organizada por ID crescente é o Líder
             const ehLiderDesteTime = (index === 0);
-            const badgeLider = ehLiderDesteTime ? `<span class="badge badge-leader">👑 Líder</span>` : '';
+            const badgeLider = ehLiderDesteTime ? <span class="badge badge-leader">👑 Líder</span> : '';
             
-            let itemHTML = `<div><strong>🎮 ${nick}</strong> ${badgeLider}<span class='member-meta'>🏅 ${meta}</span></div>`;
+            let itemHTML = <div><strong>🎮 ${nick}</strong> ${badgeLider}<span class='member-meta'>🏅 ${meta}</span></div>;
             
             if (ehLiderLogado && equipeLogadoId == idEquipeCard && idMembro != jogadorLogadoId) {
                 itemHTML += `
