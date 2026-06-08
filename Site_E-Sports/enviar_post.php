@@ -7,7 +7,7 @@ try {
     $id_jogador = $_POST['id_jogador'] ?? null;
 
     $supabaseUrl = 'https://oxflxsewydmzxfieejdl.supabase.co';
-    $anonKey = 'SUA_ANON_KEY';
+    $anonKey = 'sb_publishable_fTi-vAXwMYFFXI61eMfbAQ_V0-u6YG_';
     $bucket = 'posts';
 
     $imagem = null;

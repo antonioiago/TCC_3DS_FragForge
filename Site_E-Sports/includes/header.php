@@ -1,10 +1,31 @@
 <header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
 
-    <div class="logofrag">        
-        <h2 class="frag" style="margin: 0;">
-            <a href="index.php" style="text-decoration: none; color: inherit;">FragForge</a>
-        </h2>
-    </div>
+    <div class="logofrag">
+    <a href="index.php"
+       style="display:flex;align-items:center;gap:12px;text-decoration:none;">
+
+        <img src="includes/imagens/logo.jpeg"
+             alt="FragForge"
+             style="
+                width:60px;
+                height:60px;
+                border-radius:50%;
+                object-fit:cover;
+                border:3px solid #2563eb;
+                box-shadow:0 4px 10px rgba(37,99,235,0.25);
+             ">
+
+        <span style="
+            font-size:32px;
+            font-weight:800;
+            color:#1e293b;
+            font-family:'Segoe UI', sans-serif;
+        ">
+            FragForge
+        </span>
+
+    </a>
+</div>
 
     <div class="header-right" style="display: flex; align-items: center; gap: 20px;">
 
