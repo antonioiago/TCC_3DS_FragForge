@@ -434,10 +434,17 @@ function abrirMembros(nome, membrosString, idEquipeCard) {
             
             // Regra: O primeiro membro da lista organizada por ID crescente é o Líder
             const ehLiderDesteTime = (index === 0);
-            const badgeLider = ehLiderDesteTime ? <span class="badge badge-leader">👑 Líder</span> : '';
-            
-            let itemHTML = <div><strong>🎮 ${nick}</strong> ${badgeLider}<span class='member-meta'>🏅 ${meta}</span></div>;
-            
+            const badgeLider = ehLiderDesteTime
+    ? '<span class="badge badge-leader">👑 Líder</span>'
+    : '';
+
+let itemHTML = `
+    <div>
+        <strong>🎮 ${nick}</strong>
+        ${badgeLider}
+        <span class="member-meta">🏅 ${meta}</span>
+    </div>
+`;
             if (ehLiderLogado && equipeLogadoId == idEquipeCard && idMembro != jogadorLogadoId) {
                 itemHTML += `
                     <form method="POST" action="equipes.php" style="margin:0;" onsubmit="return confirm('Tem certeza que deseja expulsar ${nick} da equipe?')">
