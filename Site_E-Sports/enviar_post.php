@@ -2,43 +2,139 @@
 include __DIR__.'/includes/conn.php';
 
 try {
+
     $mensagem = $_POST['mensagem'] ?? '';
     $id_jogador = $_POST['id_jogador'] ?? null;
 
-    // Inicializa as variáveis como null
+    $supabaseUrl = 'https://oxflxsewydmzxfieejdl.supabase.co';
+    $anonKey = 'SUA_ANON_KEY';
+    $bucket = 'posts';
+
     $imagem = null;
     $video = null;
 
-    // Tratamento da Imagem
-    if (isset($_FILES['print_estatistica']) && $_FILES['print_estatistica']['error'] == 0) {
-        $imagem = file_get_contents($_FILES['print_estatistica']['tmp_name']);
+    // ==========================
+    // UPLOAD IMAGEM
+    // ==========================
+    if (
+        isset($_FILES['print_estatistica']) &&
+        $_FILES['print_estatistica']['error'] === 0
+    ) {
+
+        $tmp = $_FILES['print_estatistica']['tmp_name'];
+
+        $nomeArquivo =
+            'img_' .
+            $id_jogador .
+            '_' .
+            time() .
+            '_' .
+            basename($_FILES['print_estatistica']['name']);
+
+        $conteudo = file_get_contents($tmp);
+
+        $urlUpload =
+            $supabaseUrl .
+            "/storage/v1/object/$bucket/$nomeArquivo";
+
+        $ch = curl_init($urlUpload);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $conteudo);
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bearer $anonKey",
+            "apikey: $anonKey",
+            "Content-Type: " . mime_content_type($tmp)
+        ]);
+
+        curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode === 200 || $httpCode === 201) {
+
+            $imagem =
+                $supabaseUrl .
+                "/storage/v1/object/public/$bucket/$nomeArquivo";
+        }
     }
 
-    // Tratamento do Vídeo
-    if (isset($_FILES['jogada']) && $_FILES['jogada']['error'] == 0) {
-        $video = file_get_contents($_FILES['jogada']['tmp_name']);
+    // ==========================
+    // UPLOAD VÍDEO
+    // ==========================
+    if (
+        isset($_FILES['jogada']) &&
+        $_FILES['jogada']['error'] === 0
+    ) {
+
+        $tmp = $_FILES['jogada']['tmp_name'];
+
+        $nomeArquivo =
+            'video_' .
+            $id_jogador .
+            '_' .
+            time() .
+            '_' .
+            basename($_FILES['jogada']['name']);
+
+        $conteudo = file_get_contents($tmp);
+
+        $urlUpload =
+            $supabaseUrl .
+            "/storage/v1/object/$bucket/$nomeArquivo";
+
+        $ch = curl_init($urlUpload);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $conteudo);
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bearer $anonKey",
+            "apikey: $anonKey",
+            "Content-Type: " . mime_content_type($tmp)
+        ]);
+
+        curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode === 200 || $httpCode === 201) {
+
+            $video =
+                $supabaseUrl .
+                "/storage/v1/object/public/$bucket/$nomeArquivo";
+        }
     }
 
-    // Prepara a query - Note que agora aceitamos nulos para os blobs
+    // ==========================
+    // INSERT POST
+    // ==========================
     $stmt = $conn->prepare("
-        INSERT INTO post (mensagem, id_jogador, print_estatistica, jogada)
+        INSERT INTO post (
+            mensagem,
+            id_jogador,
+            print_estatistica,
+            jogada
+        )
         VALUES (?, ?, ?, ?)
     ");
 
-    // Bind dos parâmetros
-    $stmt->bindParam(1, $mensagem);
-    $stmt->bindParam(2, $id_jogador);
-    
-    // Para campos BLOB que podem ser nulos, usamos essa lógica:
-    $stmt->bindParam(3, $imagem, $imagem ? PDO::PARAM_LOB : PDO::PARAM_NULL);
-    $stmt->bindParam(4, $video, $video ? PDO::PARAM_LOB : PDO::PARAM_NULL);
-
-    $stmt->execute();
+    $stmt->execute([
+        $mensagem,
+        $id_jogador,
+        $imagem,
+        $video
+    ]);
 
     header("Location: post.php");
     exit;
 
 } catch (PDOException $e) {
-    echo "ERROR: " . $e->getMessage();
+
+    echo "ERRO: " . $e->getMessage();
+
 }
 ?>
