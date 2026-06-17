@@ -358,7 +358,15 @@ if (!empty($_FILES['jogada']['name'])) {
 <main class="not">
     <aside class="news-sidebar">
         
-
+        <a href="https://overwatch.blizzard.com/pt-br/news/24271881/lute-com-garrinhas-fofas-contra-o-reinado-da-talon-3a-temporada-na-toca-do-tigre/" class="card-link">
+            <div class="card">
+                <img src="https://bnetcmsus-a.akamaihd.net/cms/blog_header/8z/8Z9HILBLP3J81781145671355.jpg" alt="Conquest">
+                <div class="card-content">
+                    <h3>Nova temporada</h3>
+                    <p>Lute com Garrinhas Fofas contra o Reinado da Talon – 3ª Temporada: Na Toca do Tigre</p>
+                </div>
+            </div>
+        </a>
         <a href="https://overwatch.blizzard.com/en-us/news/patch-notes/" class="card-link">
             <div class="card">
                 <img src="https://preview.redd.it/patch-notes-summary-for-s17-v0-hnarqy4jax8f1.jpeg?auto=webp&s=ae1b854f85a3659536becdf949e7044107a3e42d" alt="Overwatch">
@@ -389,15 +397,7 @@ if (!empty($_FILES['jogada']['name'])) {
             </div>
         </a>
 
-        <a href="https://overwatch.blizzard.com/pt-br/news/24266793/" class="card-link">
-            <div class="card">
-                <img src="https://bnetcmsus-a.akamaihd.net/cms/blog_header/ao/AOA1HSHQ12FI1775525381310.png" alt="Conquest">
-                <div class="card-content">
-                    <h3>Nova temporada</h3>
-                    <p>Alcance alturas heroicas no Reinado da Talon – 2ª Temporada: Apogeu</p>
-                </div>
-            </div>
-        </a>
+        
     </aside>
 
     <section class="timeline">
